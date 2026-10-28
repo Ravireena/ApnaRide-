@@ -477,10 +477,15 @@ function renderAdminApplications(data) {
             );
             alert("आवेदन की स्थिति अपडेट हो गई।");
             await loadDriverApplications();
-          } catch (error) {
-            console.error(error);
-            alert("अपडेट नहीं हुआ। Firebase Rules और Admin UID जाँचें।");
-          } finally {
+} catch (error) {
+  console.error("Admin status update error:", error);
+  alert(
+    "Firebase Error: " +
+    (error.code || "unknown") +
+    " - " +
+    (error.message || "अपडेट नहीं हुआ")
+  );
+} finally {
             button.disabled = false;
           }
         });
