@@ -172,29 +172,29 @@
       return messages[code] || ("समस्या: " + (error?.message || "कृपया दोबारा कोशिश करें।"));
     }
 
-    async function runBusy(action) {
-      if (busy) return;
-      busy = true;
-      ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
-        if ($(id)) $(id).disabled = true;
-      });
-      try {
-  await action();
-} catch (error) {
-  console.error("Driver status update error:", error);
-  alert("Firebase Error: " + error.code + " - " + error.message);
-} finally {
-  button.disabled = false;
-}
+    
+async function runBusy(action) {
+  if (busy) return;
 
-        alert(explainError(error));
-      } finally {
-        busy = false;
-        ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
-          if ($(id)) $(id).disabled = false;
-        });
-      }
-    }
+  busy = true;
+
+  ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+    if ($(id)) $(id).disabled = true;
+  });
+
+  try {
+    await action();
+  } catch (error) {
+    console.error("ApnaRide Error:", error);
+    alert(explainError(error));
+  } finally {
+    busy = false;
+
+    ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+      if ($(id)) $(id).disabled = false;
+    });
+  }
+}
 
     $("signupBtn").addEventListener("click", () => {
       runBusy(async () => {
