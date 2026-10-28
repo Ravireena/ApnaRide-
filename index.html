@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApnaRide - मेरी राइड्स</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f3f6fb; color: #172033; }
+    header { background: #1358d8; color: white; text-align: center; padding: 20px 12px; }
+    header h1 { margin: 0 0 6px; }
+    header p { margin: 0; }
+    main { width: 100%; max-width: 600px; margin: 18px auto; padding: 0 12px; }
+    .card { background: white; padding: 18px; margin-bottom: 16px; border-radius: 14px; box-shadow: 0 3px 12px #0000000d; }
+    h2 { margin-top: 0; font-size: 21px; }
+    input, select, button { width: 100%; padding: 12px; margin: 7px 0; border-radius: 8px; font-size: 16px; }
+    input, select { border: 1px solid #cbd5e1; background: white; }
+    button { border: none; color: white; background: #1358d8; font-weight: bold; cursor: pointer; }
+    button:disabled { opacity: 0.6; }
+    .secondary { background: #475569; }
+    .hidden { display: none !important; }
+    .message { margin-top: 10px; overflow-wrap: anywhere; }
+    .ride { border: 1px solid #dbe3ef; border-radius: 10px; padding: 14px; margin: 12px 0; }
+    .ride p { margin: 7px 0; overflow-wrap: anywhere; }
+    .status { display: inline-block; padding: 5px 9px; background: #fff0c2; color: #805400; border-radius: 20px; font-weight: bold; font-size: 13px; }
+    .status.accepted { background: #d9fbe5; color: #126333; }
+    .status.completed { background: #dbeafe; color: #1749a3; }
+    .status.cancelled { background: #fee2e2; color: #991b1b; }
+    footer { text-align: center; padding: 16px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚗 ApnaRide</h1>
+    <p>आपकी राइड, आपकी सुविधा</p>
+  </header>
+
+  <main>
+    <section id="authCard" class="card">
+      <h2>लॉगिन / नया अकाउंट</h2>
+      <form id="authForm">
+        <input id="email" type="email" placeholder="ईमेल पता" autocomplete="email" required>
+        <input id="password" type="password" placeholder="पासवर्ड (कम से कम 6 अक्षर)" autocomplete="current-password" minlength="6" required>
+        <button id="loginBtn" type="submit">लॉगिन करें</button>
+        <button id="signupBtn" type="button" class="secondary">नया अकाउंट बनाएँ</button>
+      </form>
+      <p id="authMessage" class="message" aria-live="polite"></p>
+    </section>
+
+    <section id="accountCard" class="card hidden">
+      <p>लॉगिन हो गया है।</p>
+      <p id="userEmail"></p>
+      <button id="logoutBtn" class="secondary" type="button">लॉगआउट</button>
+    </section>
+
+    <section id="rideCard" class="card hidden">
+      <h2>नई राइड बुक करें</h2>
+      <form id="rideForm">
+        <input id="pickup" type="text" placeholder="कहाँ से जाना है?" maxlength="200" required>
+        <input id="destination" type="text" placeholder="कहाँ जाना है?" maxlength="200" required>
+        <select id="vehicle" required>
+          <option value="Bike">बाइक</option>
+          <option value="Auto">ऑटो</option>
+          <option value="Car">कार</option>
+        </select>
+        <button id="bookBtn" type="submit">राइड बुक करें</button>
+      </form>
+      <p id="rideMessage" class="message" aria-live="polite"></p>
+    </section>
+
+    <section id="driverApplicationCard" class="card hidden">
+      <h2>🚗 ड्राइवर बनने के लिए आवेदन</h2>
+      <p>अपनी जानकारी भरकर आवेदन भेजें। आवेदन की स्थिति अभी Pending रहेगी; इससे ड्राइवर की स्वीकृति नहीं मिलती।</p>
+      <form id="driverApplicationForm">
+        <input id="driverName" type="text" placeholder="आपका पूरा नाम" maxlength="100" autocomplete="name" required>
+        <input id="driverPhone" type="tel" placeholder="मोबाइल नंबर, देश कोड सहित" maxlength="16" autocomplete="tel" pattern="\+?[0-9]{10,15}" title="10 से 15 अंक डालें; चाहें तो शुरुआत में + लगाएँ" required>
+        <select id="driverVehicle" required>
+          <option value="Bike">बाइक</option>
+          <option value="Auto">ऑटो</option>
+          <option value="Car">कार</option>
+        </select>
+        <button id="driverApplyBtn" type="submit">आवेदन भेजें</button>
+      </form>
+      <p id="driverApplicationMessage" class="message" aria-live="polite"></p>
+    </section>
+
+    <section id="driverPanelCard" class="card hidden">
+      <h2>🚗 Driver Panel</h2>
+      <p id="driverPanelMessage" class="message" aria-live="polite">
+        ड्राइवर की मंज़ूरी जाँची जा रही है।
+      </p>
+
+      <h3>उपलब्ध राइड्स</h3>
+      <button id="refreshDriverRidesBtn"
+              class="secondary"
+              type="button">
+        राइड्स फिर से देखें
+      </button>
+
+      <div id="availableRidesMessage"
+           class="message"
+           aria-live="polite"></div>
+
+      <div id="availableRidesList"></div>
+    </section>
+
+    <section id="myRidesCard" class="card hidden">
+      <h2>📋 My Rides — मेरी राइड्स</h2>
+      <p>यहाँ आपकी बुक की गई राइड्स और उनके स्टेटस दिखाई देंगे।</p>
+      <button id="refreshBtn" class="secondary" type="button">राइड्स फिर से देखें</button>
+      <p id="ridesMessage" class="message" aria-live="polite">राइड्स लोड हो रही हैं...</p>
+      <div id="ridesList"></div>
+    </section>
+  </main>
+
+  <footer>ApnaRide © 2026</footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      set,
+      update, 
+      onValue,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCik1aKkEePGBT5iqMwXw8ZHQsipYZ3d78",
+      authDomain: "apnaride-6b0ed.firebaseapp.com",
+      databaseURL: "https://apnaride-6b0ed-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "apnaride-6b0ed",
+      storageBucket: "apnaride-6b0ed.firebasestorage.app",
+      messagingSenderId: "566126207398",
+      appId: "1:566126207398:web:225a76f3318f3eadc8ef67",
+      measurementId: "G-553P8F5YR0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const $ = (id) => document.getElementById(id);
+
+    let unsubscribeRides = null;
+    let busy = false;
+
+    function showMessage(id, message) {
+      $(id).textContent = message;
+    }
+
+    function explainError(error) {
+      const code = error?.code || "";
+      const messages = {
+        "auth/email-already-in-use": "यह ईमेल पहले से रजिस्टर्ड है। लॉगिन करें।",
+        "auth/invalid-email": "ईमेल पता सही नहीं है।",
+        "auth/weak-password": "मजबूत पासवर्ड डालें। कम से कम 6 अक्षर रखें।",
+        "auth/invalid-credential": "ईमेल या पासवर्ड गलत है।",
+        "auth/invalid-login-credentials": "ईमेल या पासवर्ड गलत है।",
+        "auth/network-request-failed": "इंटरनेट कनेक्शन जाँचें।",
+        "PERMISSION_DENIED": "Firebase Rules ने अनुमति नहीं दी। सुरक्षित Rules जाँचें।",
+        "database/permission-denied": "डेटाबेस अनुमति नहीं मिली। Firebase Rules जाँचें।"
+      };
+      return messages[code] || ("समस्या: " + (error?.message || "कृपया दोबारा कोशिश करें।"));
+    }
+
+    async function runBusy(action) {
+      if (busy) return;
+      busy = true;
+      ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+        if ($(id)) $(id).disabled = true;
+      });
+      try {
+  await action();
+} catch (error) {
+  console.error("Driver status update error:", error);
+  alert("Firebase Error: " + error.code + " - " + error.message);
+} finally {
+  button.disabled = false;
+}
+
+        alert(explainError(error));
+      } finally {
+        busy = false;
+        ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+          if ($(id)) $(id).disabled = false;
+        });
+      }
+    }
+
+    $("signupBtn").addEventListener("click", () => {
+      runBusy(async () => {
+        const email = $("email").value.trim();
+        const password = $("password").value;
+        await createUserWithEmailAndPassword(auth, email, password);
+        showMessage("authMessage", "अकाउंट बन गया है।");
+      });
+    });
+
+    $("authForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      runBusy(async () => {
+        await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+        showMessage("authMessage", "लॉगिन सफल हुआ।");
+      });
+    });
+
+    $("logoutBtn").addEventListener("click", () => {
+      runBusy(async () => { await signOut(auth); });
+    });
+
+    $("rideForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      runBusy(async () => {
+        const user = auth.currentUser;
+        if (!user) {
+          showMessage("rideMessage", "पहले लॉगिन करें।");
+          return;
+        }
+
+        const pickup = $("pickup").value.trim();
+        const destination = $("destination").value.trim();
+        const vehicle = $("vehicle").value;
+
+        if (!pickup || !destination || pickup.length > 200 || destination.length > 200) {
+          showMessage("rideMessage", "जाने और पहुँचने की जगह सही भरें।");
+          return;
+        }
+        if (!["Bike", "Auto", "Car"].includes(vehicle)) {
+          showMessage("rideMessage", "कृपया सही वाहन चुनें।");
+          return;
+        }
+
+        const newRideRef = push(ref(db, "rideRequests/" + user.uid));
+        await set(newRideRef, {
+          pickup,
+          destination,
+          vehicle,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+        $("rideForm").reset();
+        showMessage("rideMessage", "राइड बुकिंग सेव हो गई! नीचे My Rides में देखें।");
+      });
+    });
+
+    // ड्राइवर आवेदन: सर्वर Rules को एक ही आवेदन की अनुमति देनी चाहिए।
+    $("driverApplicationForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      runBusy(async () => {
+        const user = auth.currentUser;
+        if (!user) {
+          showMessage("driverApplicationMessage", "पहले लॉगिन करें।");
+          return;
+        }
+
+        const name = $("driverName").value.trim();
+        const phone = $("driverPhone").value.trim();
+        const vehicle = $("driverVehicle").value;
+
+        if (!name || name.length > 100) {
+          showMessage("driverApplicationMessage", "कृपया सही पूरा नाम भरें।");
+          return;
+        }
+        if (!/^\+?[0-9]{10,15}$/.test(phone)) {
+          showMessage("driverApplicationMessage", "मोबाइल नंबर सही भरें।");
+          return;
+        }
+        if (!["Bike", "Auto", "Car"].includes(vehicle)) {
+          showMessage("driverApplicationMessage", "कृपया सही वाहन चुनें।");
+          return;
+        }
+
+        showMessage("driverApplicationMessage", "आवेदन भेजा जा रहा है...");
+        try {
+          await set(ref(db, "driverApplications/" + user.uid), {
+            name,
+            phone,
+            vehicle,
+            status: "pending",
+            createdAt: serverTimestamp()
+          });
+          $("driverApplicationForm").reset();
+          showMessage("driverApplicationMessage", "आवेदन भेज दिया गया। स्थिति Pending है; अभी स्वीकृति नहीं मिली है।");
+        } catch (error) {
+          console.error(error);
+          if (error?.code === "PERMISSION_DENIED" || error?.code === "database/permission-denied") {
+            showMessage("driverApplicationMessage", "आवेदन सेव नहीं हुआ। Firebase Rules में driverApplications की सुरक्षित अनुमति जोड़ना बाकी है, या आवेदन पहले से मौजूद है।");
+          } else {
+            showMessage("driverApplicationMessage", "आवेदन नहीं भेजा गया। इंटरनेट जाँचें और दोबारा कोशिश करें।");
+          }
+        }
+      });
+    });
+
+    function formatDate(timestamp) {
+      if (typeof timestamp !== "number") return "समय उपलब्ध नहीं";
+      return new Date(timestamp).toLocaleString("hi-IN", { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function statusText(status) {
+      const labels = {
+        pending: "⏳ Pending — बुकिंग मिली",
+        accepted: "✅ Accepted — राइड स्वीकार हुई",
+        completed: "🏁 Completed — राइड पूरी हुई",
+        cancelled: "❌ Cancelled — राइड रद्द हुई"
+      };
+      return labels[status] || "स्थिति: " + String(status || "अज्ञात");
+    }
+
+    function renderRides(data) {
+      const list = $("ridesList");
+      list.replaceChildren();
+      const rides = Object.entries(data || {}).map(([id, ride]) => ({ id, ...ride }));
+      rides.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+
+      if (rides.length === 0) {
+        showMessage("ridesMessage", "अभी कोई राइड बुक नहीं की गई है।");
+        return;
+      }
+
+      showMessage("ridesMessage", "आपकी कुल राइड्स: " + rides.length);
+      for (const ride of rides) {
+        const card = document.createElement("div");
+        card.className = "ride";
+
+        const heading = document.createElement("h3");
+        heading.textContent = "राइड #" + String(ride.id).slice(-6);
+        card.appendChild(heading);
+
+        const pickup = document.createElement("p");
+        pickup.textContent = "📍 कहाँ से: " + (ride.pickup || "—");
+        card.appendChild(pickup);
+
+        const destination = document.createElement("p");
+        destination.textContent = "🏁 कहाँ तक: " + (ride.destination || "—");
+        card.appendChild(destination);
+
+        const vehicleNames = { Bike: "बाइक", Auto: "ऑटो", Car: "कार" };
+        const vehicle = document.createElement("p");
+        vehicle.textContent = "🚘 वाहन: " + (vehicleNames[ride.vehicle] || ride.vehicle || "—");
+        card.appendChild(vehicle);
+
+        const status = document.createElement("span");
+        status.className = "status";
+        if (ride.status === "accepted") status.classList.add("accepted");
+        if (ride.status === "completed") status.classList.add("completed");
+        if (ride.status === "cancelled") status.classList.add("cancelled");
+        status.textContent = statusText(ride.status);
+        card.appendChild(status);
+
+        const date = document.createElement("p");
+        date.textContent = "🕒 बुकिंग समय: " + formatDate(ride.createdAt);
+        card.appendChild(date);
+        list.appendChild(card);
+      }
+    }
+
+    function listenToMyRides(user) {
+      if (unsubscribeRides) {
+        unsubscribeRides();
+        unsubscribeRides = null;
+      }
+      $("ridesList").replaceChildren();
+      showMessage("ridesMessage", "राइड्स लोड हो रही हैं...");
+      const myRidesRef = ref(db, "rideRequests/" + user.uid);
+      unsubscribeRides = onValue(
+        myRidesRef,
+        (snapshot) => renderRides(snapshot.val()),
+        (error) => {
+          console.error(error);
+          showMessage("ridesMessage", "राइड्स नहीं खुलीं। इंटरनेट और Firebase Database Rules जाँचें।");
+        }
+      );
+    }
+
+    $("refreshBtn").addEventListener("click", () => {
+      const user = auth.currentUser;
+      if (user) listenToMyRides(user);
+      else showMessage("ridesMessage", "पहले लॉगिन करें।");
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (unsubscribeRides) {
+        unsubscribeRides();
+        unsubscribeRides = null;
+      }
+      $("authCard").classList.toggle("hidden", !!user);
+      $("accountCard").classList.toggle("hidden", !user);
+      $("rideCard").classList.toggle("hidden", !user);
+      $("myRidesCard").classList.toggle("hidden", !user);
+      $("driverApplicationCard").classList.toggle("hidden", !user);
+
+      if (user) {
+        $("userEmail").textContent = "ईमेल: " + (user.email || "");
+        listenToMyRides(user);
+      } else {
+        $("userEmail").textContent = "";
+        $("ridesList").replaceChildren();
+        showMessage("ridesMessage", "राइड्स देखने के लिए लॉगिन करें।");
+        showMessage("driverApplicationMessage", "ड्राइवर आवेदन भेजने के लिए लॉगिन करें।");
+      }
+    });
+  const APNARIDE_ADMIN_UID = "Q389zoftPfWUFLTHxcDovCi6Qge2";
+
+function updateAdminPanelVisibility(user) {
+  const panel = document.getElementById("adminPanel");
+  if (!panel) return;
+
+  panel.style.display =
+    user && user.uid === APNARIDE_ADMIN_UID ? "block" : "none";
+}
+
+onAuthStateChanged(auth, (user) => {
+  updateAdminPanelVisibility(user);
+});
+
+function renderAdminApplications(data) {
+  const list = document.getElementById("adminApplicationsList");
+  list.replaceChildren();
+
+  const applications = Object.entries(data || {});
+
+  if (applications.length === 0) {
+    document.getElementById("adminApplicationsMessage").textContent =
+      "अभी कोई ड्राइवर आवेदन नहीं है।";
+    return;
+  }
+
+  document.getElementById("adminApplicationsMessage").textContent =
+    "कुल आवेदन: " + applications.length;
+
+  for (const [uid, application] of applications) {
+    const card = document.createElement("div");
+    card.style.cssText =
+      "border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px";
+
+    const details = document.createElement("p");
+    details.textContent =
+      "नाम: " + (application.name || "—") +
+      " | मोबाइल: " + (application.phone || "—") +
+      " | वाहन: " + (application.vehicle || "—") +
+      " | स्थिति: " + (application.status || "—");
+
+    card.appendChild(details);
+
+   if (true) {
+      for (const choice of [
+        { label: "Approve", status: "approved" },
+        { label: "Reject", status: "rejected" }
+      ]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = choice.label;
+        button.style.marginRight = "8px";
+
+        button.addEventListener("click", async () => {
+          if (!auth.currentUser ||
+              auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
+            alert("केवल Admin यह कार्रवाई कर सकता है।");
+            return;
+          }
+
+          button.disabled = true;
+          try {
+            await set(
+              ref(db, "driverApplications/" + uid + "/status"),
+              choice.status
+            );
+            alert("आवेदन की स्थिति अपडेट हो गई।");
+            await loadDriverApplications();
+          } catch (error) {
+            console.error(error);
+            alert("अपडेट नहीं हुआ। Firebase Rules और Admin UID जाँचें।");
+          } finally {
+            button.disabled = false;
+          }
+        });
+
+        card.appendChild(button);
+      }
+    }
+
+    list.appendChild(card);
+  }
+}
+
+document.getElementById("loadDriverApplications")
+  .addEventListener("click", () => {
+    if (!auth.currentUser ||
+        auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
+      document.getElementById("adminApplicationsMessage").textContent =
+        "यह सुविधा केवल Admin के लिए है। पहले सही Admin अकाउंट से लॉगिन करें।";
+      return;
+    }
+
+    document.getElementById("adminApplicationsMessage").textContent =
+      "आवेदन लोड हो रहे हैं...";
+
+    onValue(
+      ref(db, "driverApplications"),
+      (snapshot) => renderAdminApplications(snapshot.val()),
+      (error) => {
+        console.error(error);
+        document.getElementById("adminApplicationsMessage").textContent =
+          "आवेदन नहीं खुल पाए। Firebase Rules जाँचें।";
+      },
+      { onlyOnce: true }
+    );
+  });</script>
+<section id="adminPanel" style="display:none; padding:20px;">
+  <h2>ApnaRide Admin Panel</h2>
+  <p>ड्राइवर आवेदन</p>
+  <button type="button" id="loadDriverApplications">
+    आवेदन देखें
+  </button>
+  <div id="adminApplicationsMessage" role="status"></div>
+  <div id="adminApplicationsList"></div>
+</section>
+
+</body>
+</html>
