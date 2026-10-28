@@ -26,6 +26,10 @@
     .status.accepted { background: #d9fbe5; color: #126333; }
     .status.completed { background: #dbeafe; color: #1749a3; }
     .status.cancelled { background: #fee2e2; color: #991b1b; }
+    .status.approved { background: #d9fbe5; color: #126333; }
+    .status.rejected { background: #fee2e2; color: #991b1b; }
+    .admin-actions { display: flex; gap: 10px; margin-top: 10px; }
+    .admin-actions button { flex: 1; width: auto; margin: 0; }
     footer { text-align: center; padding: 16px; color: #64748b; }
   </style>
 </head>
@@ -84,24 +88,11 @@
       <p id="driverApplicationMessage" class="message" aria-live="polite"></p>
     </section>
 
-    <section id="driverPanelCard" class="card hidden">
-      <h2>🚗 Driver Panel</h2>
-      <p id="driverPanelMessage" class="message" aria-live="polite">
-        ड्राइवर की मंज़ूरी जाँची जा रही है।
-      </p>
-
-      <h3>उपलब्ध राइड्स</h3>
-      <button id="refreshDriverRidesBtn"
-              class="secondary"
-              type="button">
-        राइड्स फिर से देखें
-      </button>
-
-      <div id="availableRidesMessage"
-           class="message"
-           aria-live="polite"></div>
-
-      <div id="availableRidesList"></div>
+    <section id="driverDashboardCard" class="card hidden">
+      <h2>🚘 Driver Panel — ड्राइवर डैशबोर्ड</h2>
+      <p id="driverStatusMessage" class="message" role="status">ड्राइवर आवेदन की स्थिति देखी जा रही है...</p>
+      <p id="driverStatusDetails" class="message"></p>
+      <p id="driverPanelNextStep">ध्यान दें: Driver Panel केवल Approved ड्राइवर को दिखेगा। राइड Accept/Start/Complete करने की सुविधा जोड़ने से पहले Firebase Database Rules को सुरक्षित रूप से अपडेट करना ज़रूरी है।</p>
     </section>
 
     <section id="myRidesCard" class="card hidden">
@@ -110,6 +101,20 @@
       <button id="refreshBtn" class="secondary" type="button">राइड्स फिर से देखें</button>
       <p id="ridesMessage" class="message" aria-live="polite">राइड्स लोड हो रही हैं...</p>
       <div id="ridesList"></div>
+    </section>
+
+    <section id="rolePanel" class="card hidden">
+      <h2>ApnaRide मेनू</h2>
+      <button id="customerShortcut" type="button">Customer — राइड बुक करें</button>
+      <button id="driverShortcut" type="button" class="secondary">Driver — आवेदन करें</button>
+    </section>
+
+    <section id="adminPanel" class="card hidden" aria-labelledby="adminTitle">
+      <h2 id="adminTitle">🛠️ ApnaRide Admin Panel</h2>
+      <p>यहाँ ड्राइवर के आवेदन देखें और Pending आवेदन Approve या Reject करें। ये बटन Firebase Database Rules अनुमति देने पर ही अपडेट करेंगे।</p>
+      <button id="loadDriverApplications" type="button">आवेदन देखें</button>
+      <p id="adminApplicationsMessage" class="message" role="status">आवेदन देखने के लिए बटन दबाएँ।</p>
+      <div id="adminApplicationsList"></div>
     </section>
   </main>
 
@@ -129,7 +134,6 @@
       ref,
       push,
       set,
-      update, 
       onValue,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
@@ -151,6 +155,7 @@
     const $ = (id) => document.getElementById(id);
 
     let unsubscribeRides = null;
+    let unsubscribeDriverApplication = null;
     let busy = false;
 
     function showMessage(id, message) {
@@ -172,31 +177,27 @@
       return messages[code] || ("समस्या: " + (error?.message || "कृपया दोबारा कोशिश करें।"));
     }
 
-    
-async function runBusy(action) {
-  if (busy) return;
-
-  busy = true;
-
-  ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
-    if ($(id)) $(id).disabled = true;
-  });
-
-  try {
-    await action();
-  } catch (error) {
-    console.error("ApnaRide Error:", error);
-    alert(explainError(error));
-  } finally {
-    busy = false;
-
-    ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
-      if ($(id)) $(id).disabled = false;
-    });
-  }
-}
+    async function runBusy(action) {
+      if (busy) return;
+      busy = true;
+      ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+        if ($(id)) $(id).disabled = true;
+      });
+      try {
+        await action();
+      } catch (error) {
+        console.error(error);
+        alert(explainError(error));
+      } finally {
+        busy = false;
+        ["loginBtn", "signupBtn", "bookBtn", "driverApplyBtn"].forEach((id) => {
+          if ($(id)) $(id).disabled = false;
+        });
+      }
+    }
 
     $("signupBtn").addEventListener("click", () => {
+      if (!$("authForm").reportValidity()) return;
       runBusy(async () => {
         const email = $("email").value.trim();
         const password = $("password").value;
@@ -388,148 +389,158 @@ async function runBusy(action) {
       else showMessage("ridesMessage", "पहले लॉगिन करें।");
     });
 
+    function listenToMyDriverApplication(user) {
+      if (unsubscribeDriverApplication) {
+        unsubscribeDriverApplication();
+        unsubscribeDriverApplication = null;
+      }
+      showMessage("driverStatusMessage", "ड्राइवर आवेदन की स्थिति लोड हो रही है...");
+      showMessage("driverStatusDetails", "");
+      const applicationRef = ref(db, "driverApplications/" + user.uid);
+      unsubscribeDriverApplication = onValue(applicationRef, (snapshot) => {
+        const application = snapshot.val();
+        if (!application) {
+          $("driverDashboardCard").classList.add("hidden");
+          showMessage("driverStatusMessage", "अभी आपका ड्राइवर आवेदन नहीं मिला। ऊपर आवेदन फॉर्म भरकर भेजें।");
+          showMessage("driverStatusDetails", "");
+          return;
+        }
+        const status = String(application.status || "pending").toLowerCase();
+        // Driver Panel केवल Admin द्वारा Approved आवेदन पर दिखेगा।
+        $("driverDashboardCard").classList.toggle("hidden", status !== "approved");
+        const labels = {
+          pending: "⏳ Pending — आपका आवेदन जाँच के लिए बाकी है।",
+          approved: "✅ Approved — आपका ड्राइवर आवेदन स्वीकार हो गया है।",
+          rejected: "❌ Rejected — आपका आवेदन स्वीकार नहीं हुआ। सही जानकारी के साथ Admin से संपर्क करें।"
+        };
+        showMessage("driverStatusMessage", labels[status] || ("आवेदन की स्थिति: " + status));
+        showMessage("driverStatusDetails", "नाम: " + (application.name || "—") +
+          " | वाहन: " + (application.vehicle || "—"));
+      }, (error) => {
+        console.error("Driver application status error:", error);
+        showMessage("driverStatusMessage", "आवेदन की स्थिति नहीं खुली। Firebase Database Rules और इंटरनेट जाँचें।");
+      });
+    }
+
+    // Admin code उसी Firebase module में है, इसलिए auth/db उपलब्ध हैं।
+    const APNARIDE_ADMIN_UID = "Q389zoftPfWUFLTHxcDovCi6Qge2";
+
+    function renderAdminApplications(data) {
+      const list = $("adminApplicationsList");
+      list.replaceChildren();
+      const applications = Object.entries(data || {});
+
+      if (applications.length === 0) {
+        $("adminApplicationsMessage").textContent = "अभी कोई ड्राइवर आवेदन नहीं है। पहले Driver अकाउंट से आवेदन भेजें।";
+        return;
+      }
+
+      $("adminApplicationsMessage").textContent = "कुल आवेदन: " + applications.length;
+      for (const [uid, application] of applications) {
+        const card = document.createElement("div");
+        card.className = "ride";
+        const details = document.createElement("p");
+        const currentStatus = String(application.status || "pending").trim().toLowerCase();
+        const shownStatus = application.status || "Pending";
+        details.textContent = "नाम: " + (application.name || "—") +
+          " | मोबाइल: " + (application.phone || "—") +
+          " | वाहन: " + (application.vehicle || "—") +
+          " | स्थिति: " + shownStatus;
+        card.appendChild(details);
+
+        // Approve और Reject दोनों बटन हर आवेदन पर दिखते हैं।
+        const actions = document.createElement("div");
+        actions.className = "admin-actions";
+        for (const choice of [
+          { label: "Approve", status: "approved", color: "#16803c" },
+          { label: "Reject", status: "rejected", color: "#c62828" }
+        ]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = choice.label;
+          button.style.background = choice.color;
+          button.addEventListener("click", async () => {
+            if (!auth.currentUser || auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
+              alert("केवल Admin यह कार्रवाई कर सकता है।");
+              return;
+            }
+            if (!window.confirm((choice.status === "approved" ? "इस ड्राइवर को Approve" : "इस आवेदन को Reject") + " करना चाहते हैं?")) return;
+            const oldText = button.textContent;
+            actions.querySelectorAll("button").forEach((b) => b.disabled = true);
+            button.textContent = "अपडेट हो रहा है...";
+            try {
+              await set(ref(db, "driverApplications/" + uid + "/status"), choice.status);
+              $("adminApplicationsMessage").textContent = "आवेदन की स्थिति " + choice.status + " कर दी गई।";
+              await loadAdminApplications();
+            } catch (error) {
+              console.error("Admin status update error:", error);
+              alert("Firebase Error: " + (error.code || "") + " - " + (error.message || "अपडेट नहीं हुआ। Firebase Database Rules जाँचें।"));
+            } finally {
+              button.textContent = oldText;
+              actions.querySelectorAll("button").forEach((b) => b.disabled = false);
+            }
+          });
+          actions.appendChild(button);
+        }
+        card.appendChild(actions);
+        list.appendChild(card);
+      }
+    }
+
+    async function loadAdminApplications() {
+      if (!auth.currentUser || auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
+        $("adminApplicationsMessage").textContent = "यह सुविधा केवल Admin के लिए है।";
+        return;
+      }
+      $("adminApplicationsMessage").textContent = "आवेदन लोड हो रहे हैं...";
+      try {
+        const snapshot = await new Promise((resolve, reject) => {
+          onValue(ref(db, "driverApplications"), resolve, reject, { onlyOnce: true });
+        });
+        renderAdminApplications(snapshot.val());
+      } catch (error) {
+        console.error(error);
+        $("adminApplicationsMessage").textContent = "आवेदन नहीं खुल पाए। Firebase Database Rules जाँचें।";
+      }
+    }
+
+    $("loadDriverApplications").addEventListener("click", loadAdminApplications);
+    $("customerShortcut").addEventListener("click", () => $("rideCard").scrollIntoView({ behavior: "smooth" }));
+    $("driverShortcut").addEventListener("click", () => $("driverApplicationCard").scrollIntoView({ behavior: "smooth" }));
+
     onAuthStateChanged(auth, (user) => {
       if (unsubscribeRides) {
         unsubscribeRides();
         unsubscribeRides = null;
       }
+      if (unsubscribeDriverApplication) {
+        unsubscribeDriverApplication();
+        unsubscribeDriverApplication = null;
+      }
       $("authCard").classList.toggle("hidden", !!user);
       $("accountCard").classList.toggle("hidden", !user);
+      $("rolePanel").classList.toggle("hidden", !user);
+      $("adminPanel").classList.toggle("hidden", !(user && user.uid === APNARIDE_ADMIN_UID));
       $("rideCard").classList.toggle("hidden", !user);
       $("myRidesCard").classList.toggle("hidden", !user);
       $("driverApplicationCard").classList.toggle("hidden", !user);
+      // लॉगिन होते ही Driver Panel छिपा रहेगा; Approved स्थिति मिलने पर ही खुलेगा।
+      $("driverDashboardCard").classList.add("hidden");
 
       if (user) {
         $("userEmail").textContent = "ईमेल: " + (user.email || "");
         listenToMyRides(user);
+        listenToMyDriverApplication(user);
       } else {
         $("userEmail").textContent = "";
         $("ridesList").replaceChildren();
         showMessage("ridesMessage", "राइड्स देखने के लिए लॉगिन करें।");
         showMessage("driverApplicationMessage", "ड्राइवर आवेदन भेजने के लिए लॉगिन करें।");
+        showMessage("driverStatusMessage", "ड्राइवर की स्थिति देखने के लिए लॉगिन करें।");
+        showMessage("driverStatusDetails", "");
       }
     });
-  const APNARIDE_ADMIN_UID = "Q389zoftPfWUFLTHxcDovCi6Qge2";
-
-function updateAdminPanelVisibility(user) {
-  const panel = document.getElementById("adminPanel");
-  if (!panel) return;
-
-  panel.style.display =
-    user && user.uid === APNARIDE_ADMIN_UID ? "block" : "none";
-}
-
-onAuthStateChanged(auth, (user) => {
-  updateAdminPanelVisibility(user);
-});
-
-function renderAdminApplications(data) {
-  const list = document.getElementById("adminApplicationsList");
-  list.replaceChildren();
-
-  const applications = Object.entries(data || {});
-
-  if (applications.length === 0) {
-    document.getElementById("adminApplicationsMessage").textContent =
-      "अभी कोई ड्राइवर आवेदन नहीं है।";
-    return;
-  }
-
-  document.getElementById("adminApplicationsMessage").textContent =
-    "कुल आवेदन: " + applications.length;
-
-  for (const [uid, application] of applications) {
-    const card = document.createElement("div");
-    card.style.cssText =
-      "border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px";
-
-    const details = document.createElement("p");
-    details.textContent =
-      "नाम: " + (application.name || "—") +
-      " | मोबाइल: " + (application.phone || "—") +
-      " | वाहन: " + (application.vehicle || "—") +
-      " | स्थिति: " + (application.status || "—");
-
-    card.appendChild(details);
-
-   if (true) {
-      for (const choice of [
-        { label: "Approve", status: "approved" },
-        { label: "Reject", status: "rejected" }
-      ]) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = choice.label;
-        button.style.marginRight = "8px";
-
-        button.addEventListener("click", async () => {
-          if (!auth.currentUser ||
-              auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
-            alert("केवल Admin यह कार्रवाई कर सकता है।");
-            return;
-          }
-
-          button.disabled = true;
-          try {
-            await set(
-              ref(db, "driverApplications/" + uid + "/status"),
-              choice.status
-            );
-            alert("आवेदन की स्थिति अपडेट हो गई।");
-            await loadDriverApplications();
-} catch (error) {
-  console.error("Admin status update error:", error);
-  alert(
-    "Firebase Error: " +
-    (error.code || "unknown") +
-    " - " +
-    (error.message || "अपडेट नहीं हुआ")
-  );
-} finally {
-            button.disabled = false;
-          }
-        });
-
-        card.appendChild(button);
-      }
-    }
-
-    list.appendChild(card);
-  }
-}
-
-document.getElementById("loadDriverApplications")
-  .addEventListener("click", () => {
-    if (!auth.currentUser ||
-        auth.currentUser.uid !== APNARIDE_ADMIN_UID) {
-      document.getElementById("adminApplicationsMessage").textContent =
-        "यह सुविधा केवल Admin के लिए है। पहले सही Admin अकाउंट से लॉगिन करें।";
-      return;
-    }
-
-    document.getElementById("adminApplicationsMessage").textContent =
-      "आवेदन लोड हो रहे हैं...";
-
-    onValue(
-      ref(db, "driverApplications"),
-      (snapshot) => renderAdminApplications(snapshot.val()),
-      (error) => {
-        console.error(error);
-        document.getElementById("adminApplicationsMessage").textContent =
-          "आवेदन नहीं खुल पाए। Firebase Rules जाँचें।";
-      },
-      { onlyOnce: true }
-    );
-  });</script>
-<section id="adminPanel" style="display:none; padding:20px;">
-  <h2>ApnaRide Admin Panel</h2>
-  <p>ड्राइवर आवेदन</p>
-  <button type="button" id="loadDriverApplications">
-    आवेदन देखें
-  </button>
-  <div id="adminApplicationsMessage" role="status"></div>
-  <div id="adminApplicationsList"></div>
-</section>
-
+  </script>
 </body>
 </html>
+
