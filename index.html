@@ -26,6 +26,7 @@
     .status.accepted { background: #d9fbe5; color: #126333; }
     .status.completed { background: #dbeafe; color: #1749a3; }
     .status.cancelled { background: #fee2e2; color: #991b1b; }
+    label { display:block; margin-top:8px; }
     .status.approved { background: #d9fbe5; color: #126333; }
     .status.rejected { background: #fee2e2; color: #991b1b; }
     .admin-actions { display: flex; gap: 10px; margin-top: 10px; }
@@ -92,7 +93,7 @@
       <h2>🚘 Driver Panel — ड्राइवर डैशबोर्ड</h2>
       <p id="driverStatusMessage" class="message" role="status">ड्राइवर आवेदन की स्थिति देखी जा रही है...</p>
       <p id="driverStatusDetails" class="message"></p>
-      <p id="driverPanelNextStep">ध्यान दें: Driver Panel केवल Approved ड्राइवर को दिखेगा। राइड Accept/Start/Complete करने की सुविधा जोड़ने से पहले Firebase Database Rules को सुरक्षित रूप से अपडेट करना ज़रूरी है।</p>
+      <p>ध्यान दें: Approved होने के बाद ही ड्राइवर के रूप में काम शुरू करें। Approved होने पर नीचे उपलब्ध राइड्स दिखेंगी।</p>
     </section>
 
     <section id="myRidesCard" class="card hidden">
@@ -107,6 +108,39 @@
       <h2>ApnaRide मेनू</h2>
       <button id="customerShortcut" type="button">Customer — राइड बुक करें</button>
       <button id="driverShortcut" type="button" class="secondary">Driver — आवेदन करें</button>
+    </section>
+
+
+    <section id="driverRidesCard" class="card hidden">
+      <h2>🚘 उपलब्ध राइड्स</h2>
+      <p>यह सुविधा केवल Approved ड्राइवर के लिए है। एक राइड एक ही ड्राइवर स्वीकार कर सकता है।</p>
+      <button id="refreshDriverRides" type="button" class="secondary">राइड्स रीफ्रेश करें</button>
+      <p id="driverRidesMessage" class="message" aria-live="polite">लोड हो रहा है...</p>
+      <div id="driverRidesList"></div>
+      <button id="shareLocationBtn" type="button">📍 अपनी लाइव लोकेशन अपडेट करें</button>
+      <p id="locationMessage" class="message" aria-live="polite">लोकेशन शेयर करने के लिए बटन दबाएँ।</p>
+    </section>
+
+    <section id="foodCard" class="card hidden">
+      <h2>🍽️ Food Ordering</h2>
+      <p>डेमो मेन्यू — ऑर्डर Firebase में सेव होगा। कमीशन प्रतिशत नीचे सेट किया जा सकता है।</p>
+      <form id="foodForm">
+        <label for="foodItem">खाना चुनें</label>
+        <select id="foodItem" required>
+          <option value="Thali" data-price="120">थाली — ₹120</option>
+          <option value="Pizza" data-price="200">पिज़्ज़ा — ₹200</option>
+          <option value="Burger" data-price="90">बर्गर — ₹90</option>
+          <option value="Sandwich" data-price="70">सैंडविच — ₹70</option>
+        </select>
+        <input id="foodQty" type="number" min="1" max="20" value="1" required aria-label="मात्रा">
+        <input id="foodAddress" type="text" maxlength="250" placeholder="डिलीवरी का पता" required>
+        <label for="commissionRate">प्लेटफ़ॉर्म कमीशन (%)</label>
+        <input id="commissionRate" type="number" min="0" max="30" value="10" required>
+        <p id="foodPricePreview">कुल: ₹120 | अनुमानित कमीशन: ₹12</p>
+        <button id="foodOrderBtn" type="submit">फूड ऑर्डर करें</button>
+      </form>
+      <p id="foodMessage" class="message" aria-live="polite"></p>
+      <h3>मेरे फूड ऑर्डर</h3><div id="foodOrdersList"></div>
     </section>
 
     <section id="adminPanel" class="card hidden" aria-labelledby="adminTitle">
@@ -135,7 +169,7 @@
       push,
       set,
       onValue,
-      serverTimestamp
+      serverTimestamp, update, runTransaction, get
     } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -157,6 +191,10 @@
     let unsubscribeRides = null;
     let unsubscribeDriverApplication = null;
     let busy = false;
+    let currentDriverApproved = false;
+    let availableRidesCache = {};
+    let unsubscribeAvailableRides = null;
+    let locationWatchId = null;
 
     function showMessage(id, message) {
       $(id).textContent = message;
@@ -241,12 +279,9 @@
         }
 
         const newRideRef = push(ref(db, "rideRequests/" + user.uid));
+        const createdAt = Date.now();
         await set(newRideRef, {
-          pickup,
-          destination,
-          vehicle,
-          status: "pending",
-          createdAt: serverTimestamp()
+          pickup, destination, vehicle, status: "pending", createdAt
         });
         $("rideForm").reset();
         showMessage("rideMessage", "राइड बुकिंग सेव हो गई! नीचे My Rides में देखें।");
@@ -311,6 +346,7 @@
       const labels = {
         pending: "⏳ Pending — बुकिंग मिली",
         accepted: "✅ Accepted — राइड स्वीकार हुई",
+        in_progress: "🚗 In Progress — राइड चल रही है",
         completed: "🏁 Completed — राइड पूरी हुई",
         cancelled: "❌ Cancelled — राइड रद्द हुई"
       };
@@ -353,6 +389,7 @@
         const status = document.createElement("span");
         status.className = "status";
         if (ride.status === "accepted") status.classList.add("accepted");
+        if (ride.status === "in_progress") status.classList.add("accepted");
         if (ride.status === "completed") status.classList.add("completed");
         if (ride.status === "cancelled") status.classList.add("cancelled");
         status.textContent = statusText(ride.status);
@@ -400,14 +437,20 @@
       unsubscribeDriverApplication = onValue(applicationRef, (snapshot) => {
         const application = snapshot.val();
         if (!application) {
-          $("driverDashboardCard").classList.add("hidden");
           showMessage("driverStatusMessage", "अभी आपका ड्राइवर आवेदन नहीं मिला। ऊपर आवेदन फॉर्म भरकर भेजें।");
           showMessage("driverStatusDetails", "");
+          currentDriverApproved = false;
+          stopAvailableRideListener();
+          $("driverDashboardCard").classList.add("hidden");
+          $("driverRidesCard").classList.add("hidden");
           return;
         }
         const status = String(application.status || "pending").toLowerCase();
-        // Driver Panel केवल Admin द्वारा Approved आवेदन पर दिखेगा।
-        $("driverDashboardCard").classList.toggle("hidden", status !== "approved");
+        currentDriverApproved = status === "approved";
+        if (!currentDriverApproved) stopAvailableRideListener();
+        $("driverDashboardCard").classList.toggle("hidden", !currentDriverApproved);
+        $("driverRidesCard").classList.toggle("hidden", !currentDriverApproved);
+        if (currentDriverApproved) loadAvailableRides();
         const labels = {
           pending: "⏳ Pending — आपका आवेदन जाँच के लिए बाकी है।",
           approved: "✅ Approved — आपका ड्राइवर आवेदन स्वीकार हो गया है।",
@@ -421,6 +464,153 @@
         showMessage("driverStatusMessage", "आवेदन की स्थिति नहीं खुली। Firebase Database Rules और इंटरनेट जाँचें।");
       });
     }
+
+
+    function vehicleName(v) { return ({Bike:"बाइक",Auto:"ऑटो",Car:"कार"})[v] || v || "—"; }
+
+    function stopAvailableRideListener() {
+      if (unsubscribeAvailableRides) {
+        unsubscribeAvailableRides();
+        unsubscribeAvailableRides = null;
+      }
+      availableRidesCache = [];
+    }
+
+    function loadAvailableRides() {
+      const user = auth.currentUser;
+      if (!user || !currentDriverApproved) return;
+      stopAvailableRideListener();
+      showMessage("driverRidesMessage", "उपलब्ध राइड्स लोड हो रही हैं...");
+      unsubscribeAvailableRides = onValue(ref(db, "rideRequests"), (snap) => {
+        const tree = snap.val() || {};
+        const rides = [];
+        for (const [customerUid, customerRides] of Object.entries(tree)) {
+          for (const [rideId, ride] of Object.entries(customerRides || {})) {
+            rides.push({ ...ride, customerUid, rideId });
+          }
+        }
+        availableRidesCache = rides;
+        renderAvailableRides();
+      }, (err) => {
+        console.error(err);
+        showMessage("driverRidesMessage", "राइड्स नहीं खुलीं। Firebase Rules में Approved ड्राइवर को rideRequests पढ़ने की अनुमति जाँचें।");
+      });
+    }
+
+    function renderAvailableRides() {
+      const list = $("driverRidesList");
+      list.replaceChildren();
+      const user = auth.currentUser;
+      const rides = availableRidesCache
+        .filter(r => r.status === "pending" || (r.driverUid === user?.uid && ["accepted", "in_progress"].includes(r.status)))
+        .sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+      if (!rides.length) {
+        showMessage("driverRidesMessage", "अभी कोई उपलब्ध राइड नहीं है।");
+        return;
+      }
+      showMessage("driverRidesMessage", "दिखाई गई राइड्स: " + rides.length);
+      rides.forEach(ride => {
+        const card = document.createElement("div");
+        card.className = "ride";
+        const p = document.createElement("p");
+        p.textContent = "📍 " + (ride.pickup || "—") + " → 🏁 " + (ride.destination || "—");
+        card.appendChild(p);
+        const v = document.createElement("p");
+        v.textContent = "वाहन: " + vehicleName(ride.vehicle);
+        card.appendChild(v);
+        const s = document.createElement("p");
+        s.textContent = "स्थिति: " + statusText(ride.status);
+        card.appendChild(s);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        if (ride.status === "pending" && !ride.driverUid) {
+          btn.textContent = "राइड Accept करें";
+          btn.onclick = () => changeRideState(ride, "accepted");
+        } else if (ride.driverUid === user?.uid && ride.status === "accepted") {
+          btn.textContent = "राइड Start करें";
+          btn.onclick = () => changeRideState(ride, "in_progress");
+        } else if (ride.driverUid === user?.uid && ride.status === "in_progress") {
+          btn.textContent = "राइड Complete करें";
+          btn.onclick = () => changeRideState(ride, "completed");
+        } else {
+          btn.disabled = true;
+          btn.textContent = ride.status === "pending" ? "राइड उपलब्ध नहीं" : "दूसरे ड्राइवर ने स्वीकार की";
+        }
+        card.appendChild(btn);
+        list.appendChild(card);
+      });
+    }
+
+    async function changeRideState(ride, nextStatus) {
+      const user = auth.currentUser;
+      if (!user || !currentDriverApproved) {
+        alert("केवल Approved ड्राइवर यह काम कर सकता है।");
+        return;
+      }
+      const rideRef = ref(db, "rideRequests/" + ride.customerUid + "/" + ride.rideId);
+      try {
+        const result = await runTransaction(rideRef, current => {
+          if (!current) return;
+          if (nextStatus === "accepted") {
+            if (current.status !== "pending" || current.driverUid) return;
+            return { ...current, status: "accepted", driverUid: user.uid, acceptedAt: Date.now() };
+          }
+          if (current.driverUid !== user.uid) return;
+          if (nextStatus === "in_progress" && current.status === "accepted") {
+            return { ...current, status: "in_progress", startedAt: Date.now() };
+          }
+          if (nextStatus === "completed" && current.status === "in_progress") {
+            return { ...current, status: "completed", completedAt: Date.now() };
+          }
+          return;
+        });
+        if (!result.committed) {
+          alert("राइड की स्थिति नहीं बदली। हो सकता है किसी दूसरे ड्राइवर ने स्वीकार की हो या Firebase Rules अनुमति न दे रहे हों।");
+          return;
+        }
+        showMessage("driverRidesMessage", "राइड अपडेट हो गई: " + statusText(result.snapshot.val().status));
+      } catch (err) {
+        console.error(err);
+        alert("Ride update error: " + (err.code || "") + " " + (err.message || ""));
+      }
+    }
+    $("refreshDriverRides").addEventListener("click", loadAvailableRides);
+
+    function updateFoodPreview() {
+      const opt=$("foodItem").selectedOptions[0]; const price=Number(opt.dataset.price||0);
+      const qty=Math.max(1,Math.min(20,Number($("foodQty").value)||1));
+      const rate=Math.max(0,Math.min(30,Number($("commissionRate").value)||0));
+      const total=price*qty; $("foodPricePreview").textContent=`कुल: ₹${total} | अनुमानित कमीशन: ₹${(total*rate/100).toFixed(2)}`;
+    }
+    ["foodItem","foodQty","commissionRate"].forEach(id=>$(id).addEventListener("input",updateFoodPreview));
+    $("foodForm").addEventListener("submit",event=>{
+      event.preventDefault(); runBusy(async()=>{
+        const user=auth.currentUser; if(!user) throw new Error("पहले लॉगिन करें।");
+        const opt=$("foodItem").selectedOptions[0]; const qty=Number($("foodQty").value); const rate=Number($("commissionRate").value);
+        if(!opt || !Number.isInteger(qty)||qty<1||qty>20||rate<0||rate>30) throw new Error("ऑर्डर की जानकारी सही भरें।");
+        const total=Number(opt.dataset.price)*qty;
+        const orderRef=push(ref(db,"foodOrders/"+user.uid));
+        await set(orderRef,{item:opt.value,quantity:qty,address:$("foodAddress").value.trim(),total,commissionRate:rate,commissionAmount:Number((total*rate/100).toFixed(2)),status:"received",createdAt:Date.now()});
+        showMessage("foodMessage","फूड ऑर्डर सेव हुआ। यह डेमो ऑर्डर है; रेस्टोरेंट/पेमेंट कनेक्शन अभी नहीं है।");
+        $("foodForm").reset(); updateFoodPreview(); loadFoodOrders(user);
+      });
+    });
+    function loadFoodOrders(user) {
+      onValue(ref(db,"foodOrders/"+user.uid),snap=>{
+        const list=$("foodOrdersList"); list.replaceChildren(); const data=snap.val()||{};
+        Object.entries(data).reverse().forEach(([id,o])=>{const p=document.createElement("p");p.textContent=`${o.item} × ${o.quantity} — ₹${o.total} | कमीशन अनुमान ₹${o.commissionAmount} | ${o.status}`;list.appendChild(p);});
+      },err=>{console.error(err);});
+    }
+    $("shareLocationBtn").addEventListener("click",()=>{
+      const user=auth.currentUser;
+      if(!user || !currentDriverApproved){showMessage("locationMessage","केवल लॉगिन Approved ड्राइवर लोकेशन शेयर कर सकता है।");return;}
+      if(!navigator.geolocation){showMessage("locationMessage","इस ब्राउज़र में GPS उपलब्ध नहीं है।");return;}
+      showMessage("locationMessage","GPS अनुमति माँगी जा रही है...");
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        try { await set(ref(db,"driverLocations/"+user.uid),{latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy,updatedAt:Date.now()}); showMessage("locationMessage","लोकेशन अपडेट हुई। फिर अपडेट करने के लिए बटन दबाएँ।"); }
+        catch(err){console.error(err);showMessage("locationMessage","लोकेशन सेव नहीं हुई; Firebase Rules जाँचें।");}
+      },err=>showMessage("locationMessage","GPS अनुमति नहीं मिली या लोकेशन उपलब्ध नहीं है: "+err.message),{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    });
 
     // Admin code उसी Firebase module में है, इसलिए auth/db उपलब्ध हैं।
     const APNARIDE_ADMIN_UID = "Q389zoftPfWUFLTHxcDovCi6Qge2";
@@ -517,6 +707,7 @@
         unsubscribeDriverApplication();
         unsubscribeDriverApplication = null;
       }
+      stopAvailableRideListener();
       $("authCard").classList.toggle("hidden", !!user);
       $("accountCard").classList.toggle("hidden", !user);
       $("rolePanel").classList.toggle("hidden", !user);
@@ -524,13 +715,15 @@
       $("rideCard").classList.toggle("hidden", !user);
       $("myRidesCard").classList.toggle("hidden", !user);
       $("driverApplicationCard").classList.toggle("hidden", !user);
-      // लॉगिन होते ही Driver Panel छिपा रहेगा; Approved स्थिति मिलने पर ही खुलेगा।
       $("driverDashboardCard").classList.add("hidden");
+      $("driverRidesCard").classList.add("hidden");
+      $("foodCard").classList.toggle("hidden", !user);
 
       if (user) {
         $("userEmail").textContent = "ईमेल: " + (user.email || "");
         listenToMyRides(user);
         listenToMyDriverApplication(user);
+        loadFoodOrders(user);
       } else {
         $("userEmail").textContent = "";
         $("ridesList").replaceChildren();
@@ -538,9 +731,11 @@
         showMessage("driverApplicationMessage", "ड्राइवर आवेदन भेजने के लिए लॉगिन करें।");
         showMessage("driverStatusMessage", "ड्राइवर की स्थिति देखने के लिए लॉगिन करें।");
         showMessage("driverStatusDetails", "");
+        currentDriverApproved = false;
+        $("driverRidesList").replaceChildren();
+        $("foodOrdersList").replaceChildren();
       }
     });
   </script>
 </body>
 </html>
-
