@@ -87,6 +87,7 @@
           <option value="DeliveryVan">डिलीवरी वैन</option>
           <option value="TataAce">छोटा हाथी (Tata Ace)</option>
           <option value="TataMagic">Tata Magic / कमर्शियल वैन</option>
+          <option value="ThreeWheelerTempo">तीन-पहिया मालवाहक टेम्पो</option>
         </select>
         <button id="driverApplyBtn" type="submit">आवेदन भेजें</button>
       </form>
@@ -150,6 +151,7 @@
           <option value="DeliveryVan">डिलीवरी वैन</option>
           <option value="TataAce">छोटा हाथी (Tata Ace)</option>
           <option value="TataMagic">Tata Magic / कमर्शियल वैन</option>
+          <option value="ThreeWheelerTempo">तीन-पहिया मालवाहक टेम्पो</option>
         </select>
         <button id="parcelOrderBtn" type="submit">पार्सल डिलीवरी बुक करें</button>
       </form>
@@ -389,7 +391,7 @@
           showMessage("driverApplicationMessage", "मोबाइल नंबर सही भरें।");
           return;
         }
-        if (!["Bike", "Auto", "Car", "DeliveryVan", "TataAce", "TataMagic"].includes(vehicle)) {
+        if (!["Bike", "Auto", "Car", "DeliveryVan", "TataAce", "TataMagic", "ThreeWheelerTempo"].includes(vehicle)) {
           showMessage("driverApplicationMessage", "कृपया सही वाहन चुनें।");
           return;
         }
@@ -548,7 +550,7 @@
     }
 
 
-    function vehicleName(v) { return ({Bike:"बाइक",Auto:"माल ढोने वाला ऑटो",Car:"कार",DeliveryVan:"डिलीवरी वैन",TataAce:"छोटा हाथी (Tata Ace)",TataMagic:"Tata Magic / कमर्शियल वैन"})[v] || v || "—"; }
+    function vehicleName(v) { return ({Bike:"बाइक",Auto:"माल ढोने वाला ऑटो",Car:"कार",DeliveryVan:"डिलीवरी वैन",TataAce:"छोटा हाथी (Tata Ace)",TataMagic:"Tata Magic / कमर्शियल वैन",ThreeWheelerTempo:"तीन-पहिया मालवाहक टेम्पो"})[v] || v || "—"; }
 
     function stopAvailableRideListener() {
       if (unsubscribeAvailableRides) {
