@@ -79,10 +79,14 @@
       <form id="driverApplicationForm">
         <input id="driverName" type="text" placeholder="आपका पूरा नाम" maxlength="100" autocomplete="name" required>
         <input id="driverPhone" type="tel" placeholder="मोबाइल नंबर, देश कोड सहित" maxlength="16" autocomplete="tel" pattern="\+?[0-9]{10,15}" title="10 से 15 अंक डालें; चाहें तो शुरुआत में + लगाएँ" required>
+        <label for="driverVehicle">आप किस प्रकार का वाहन चलाते हैं?</label>
         <select id="driverVehicle" required>
           <option value="Bike">बाइक</option>
-          <option value="Auto">ऑटो</option>
+          <option value="Auto">माल ढोने वाला ऑटो</option>
           <option value="Car">कार</option>
+          <option value="DeliveryVan">डिलीवरी वैन</option>
+          <option value="TataAce">छोटा हाथी (Tata Ace)</option>
+          <option value="TataMagic">Tata Magic / कमर्शियल वैन</option>
         </select>
         <button id="driverApplyBtn" type="submit">आवेदन भेजें</button>
       </form>
@@ -121,6 +125,47 @@
       <p id="locationMessage" class="message" aria-live="polite">लोकेशन शेयर करने के लिए बटन दबाएँ।</p>
     </section>
 
+    <section id="parcelCard" class="card hidden">
+      <h2>📦 पार्सल भेजें</h2>
+      <p>बाइक, माल ढोने वाला ऑटो, कार/डिलीवरी वैन, छोटा हाथी (Tata Ace) या उपयुक्त कमर्शियल Tata Magic चुनें। बुकिंग उसी वाहन प्रकार के Approved ड्राइवर को दिखाई जाएगी। यह अभी डेमो डिलीवरी सुविधा है।</p>
+      <form id="parcelForm">
+        <input id="parcelSenderName" type="text" maxlength="100" placeholder="भेजने वाले का नाम" required>
+        <input id="parcelSenderPhone" type="tel" maxlength="16" pattern="\+?[0-9]{10,15}" placeholder="भेजने वाले का मोबाइल नंबर" required>
+        <input id="parcelPickupAddress" type="text" maxlength="250" placeholder="पार्सल कहाँ से लेना है? (पूरा पता)" required>
+        <input id="parcelReceiverName" type="text" maxlength="100" placeholder="पाने वाले का नाम" required>
+        <input id="parcelReceiverPhone" type="tel" maxlength="16" pattern="\+?[0-9]{10,15}" placeholder="पाने वाले का मोबाइल नंबर" required>
+        <input id="parcelDeliveryAddress" type="text" maxlength="250" placeholder="पार्सल कहाँ पहुँचाना है? (पूरा पता)" required>
+        <label for="parcelType">पार्सल का प्रकार</label>
+        <select id="parcelType" required>
+          <option value="Documents">दस्तावेज़</option>
+          <option value="Small parcel">छोटा पार्सल</option>
+          <option value="Box">डिब्बा / बॉक्स</option>
+          <option value="Other">अन्य</option>
+        </select>
+        <label for="parcelVehicle">डिलीवरी वाहन</label>
+        <select id="parcelVehicle" required>
+          <option value="Bike">बाइक</option>
+          <option value="Auto">माल ढोने वाला ऑटो</option>
+          <option value="Car">कार</option>
+          <option value="DeliveryVan">डिलीवरी वैन</option>
+          <option value="TataAce">छोटा हाथी (Tata Ace)</option>
+          <option value="TataMagic">Tata Magic / कमर्शियल वैन</option>
+        </select>
+        <button id="parcelOrderBtn" type="submit">पार्सल डिलीवरी बुक करें</button>
+      </form>
+      <p id="parcelMessage" class="message" aria-live="polite"></p>
+      <h3>मेरे पार्सल</h3>
+      <div id="myParcelsList"></div>
+    </section>
+
+    <section id="driverParcelsCard" class="card hidden">
+      <h2>📦 उपलब्ध पार्सल डिलीवरी</h2>
+      <p>यह सुविधा केवल Approved ड्राइवर के लिए है। डिलीवरी स्टेटस: Pending → Accepted → रास्ते में → Delivered.</p>
+      <button id="refreshDriverParcels" class="secondary" type="button">पार्सल रीफ्रेश करें</button>
+      <p id="driverParcelsMessage" class="message" aria-live="polite">लोड हो रहा है...</p>
+      <div id="driverParcelsList"></div>
+    </section>
+
     <section id="foodCard" class="card hidden">
       <h2>🍽️ Food Ordering</h2>
       <p>डेमो मेन्यू — ऑर्डर Firebase में सेव होगा। कमीशन प्रतिशत नीचे सेट किया जा सकता है।</p>
@@ -141,6 +186,36 @@
       </form>
       <p id="foodMessage" class="message" aria-live="polite"></p>
       <h3>मेरे फूड ऑर्डर</h3><div id="foodOrdersList"></div>
+    </section>
+
+    <section id="hotelCard" class="card hidden">
+      <h2>🏨 Hotel / Room Booking</h2>
+      <p>होटल या OYO-जैसे कमरे के लिए बुकिंग अनुरोध भेजें। यह शुरुआती डेमो है; होटल पार्टनर, लाइव उपलब्धता और ऑनलाइन पेमेंट अभी जुड़े नहीं हैं।</p>
+      <form id="hotelForm">
+        <label for="hotelCity">शहर / इलाका</label>
+        <input id="hotelCity" type="text" maxlength="120" placeholder="जैसे: Surat, Valsad" required>
+        <label for="hotelType">कमरे का प्रकार</label>
+        <select id="hotelType" required>
+          <option value="Standard Room">Standard Room</option>
+          <option value="Deluxe Room">Deluxe Room</option>
+          <option value="Family Room">Family Room</option>
+          <option value="Couple Room">Couple Room</option>
+        </select>
+        <label for="hotelCheckIn">Check-in तारीख</label>
+        <input id="hotelCheckIn" type="date" required>
+        <label for="hotelCheckOut">Check-out तारीख</label>
+        <input id="hotelCheckOut" type="date" required>
+        <label for="hotelGuests">कुल मेहमान</label>
+        <input id="hotelGuests" type="number" min="1" max="10" value="2" required>
+        <label for="hotelRooms">कमरों की संख्या</label>
+        <input id="hotelRooms" type="number" min="1" max="5" value="1" required>
+        <input id="hotelGuestName" type="text" maxlength="100" placeholder="बुकिंग करने वाले का नाम" required>
+        <input id="hotelGuestPhone" type="tel" maxlength="16" pattern="\+?[0-9]{10,15}" placeholder="मोबाइल नंबर" required>
+        <button id="hotelBookBtn" type="submit">कमरे की बुकिंग अनुरोध भेजें</button>
+      </form>
+      <p id="hotelMessage" class="message" aria-live="polite"></p>
+      <h3>मेरी होटल बुकिंग</h3>
+      <div id="myHotelBookingsList"></div>
     </section>
 
     <section id="adminPanel" class="card hidden" aria-labelledby="adminTitle">
@@ -192,8 +267,12 @@
     let unsubscribeDriverApplication = null;
     let busy = false;
     let currentDriverApproved = false;
+    let currentDriverVehicle = "";
     let availableRidesCache = {};
     let unsubscribeAvailableRides = null;
+    let unsubscribeAvailableParcels = null;
+    let unsubscribeMyParcels = null;
+    let availableParcelsCache = [];
     let locationWatchId = null;
 
     function showMessage(id, message) {
@@ -310,7 +389,7 @@
           showMessage("driverApplicationMessage", "मोबाइल नंबर सही भरें।");
           return;
         }
-        if (!["Bike", "Auto", "Car"].includes(vehicle)) {
+        if (!["Bike", "Auto", "Car", "DeliveryVan", "TataAce", "TataMagic"].includes(vehicle)) {
           showMessage("driverApplicationMessage", "कृपया सही वाहन चुनें।");
           return;
         }
@@ -440,6 +519,7 @@
           showMessage("driverStatusMessage", "अभी आपका ड्राइवर आवेदन नहीं मिला। ऊपर आवेदन फॉर्म भरकर भेजें।");
           showMessage("driverStatusDetails", "");
           currentDriverApproved = false;
+          currentDriverVehicle = "";
           stopAvailableRideListener();
           $("driverDashboardCard").classList.add("hidden");
           $("driverRidesCard").classList.add("hidden");
@@ -447,10 +527,12 @@
         }
         const status = String(application.status || "pending").toLowerCase();
         currentDriverApproved = status === "approved";
-        if (!currentDriverApproved) stopAvailableRideListener();
+        currentDriverVehicle = String(application.vehicle || "");
+        if (!currentDriverApproved) { stopAvailableRideListener(); stopAvailableParcelListener(); }
         $("driverDashboardCard").classList.toggle("hidden", !currentDriverApproved);
         $("driverRidesCard").classList.toggle("hidden", !currentDriverApproved);
-        if (currentDriverApproved) loadAvailableRides();
+        $("driverParcelsCard").classList.toggle("hidden", !currentDriverApproved);
+        if (currentDriverApproved) { loadAvailableRides(); loadAvailableParcels(); }
         const labels = {
           pending: "⏳ Pending — आपका आवेदन जाँच के लिए बाकी है।",
           approved: "✅ Approved — आपका ड्राइवर आवेदन स्वीकार हो गया है।",
@@ -466,7 +548,7 @@
     }
 
 
-    function vehicleName(v) { return ({Bike:"बाइक",Auto:"ऑटो",Car:"कार"})[v] || v || "—"; }
+    function vehicleName(v) { return ({Bike:"बाइक",Auto:"माल ढोने वाला ऑटो",Car:"कार",DeliveryVan:"डिलीवरी वैन",TataAce:"छोटा हाथी (Tata Ace)",TataMagic:"Tata Magic / कमर्शियल वैन"})[v] || v || "—"; }
 
     function stopAvailableRideListener() {
       if (unsubscribeAvailableRides) {
@@ -575,6 +657,138 @@
       }
     }
     $("refreshDriverRides").addEventListener("click", loadAvailableRides);
+
+    function parcelStatusText(status) {
+      return ({pending:"Pending — ड्राइवर का इंतज़ार", accepted:"ड्राइवर ने स्वीकार किया", in_transit:"पार्सल रास्ते में है", delivered:"डिलीवर हो गया"})[status] || status || "—";
+    }
+
+    function loadMyParcels(user) {
+      if (unsubscribeMyParcels) unsubscribeMyParcels();
+      unsubscribeMyParcels = onValue(ref(db, "parcelRequests/" + user.uid), snap => {
+        const list = $("myParcelsList"); list.replaceChildren();
+        const parcels = snap.val() || {};
+        const entries = Object.entries(parcels).reverse();
+        if (!entries.length) { const p=document.createElement("p"); p.textContent="अभी कोई पार्सल बुक नहीं किया गया।"; list.appendChild(p); return; }
+        entries.forEach(([id, parcel]) => {
+          const card=document.createElement("div"); card.className="ride";
+          const route=document.createElement("p"); route.textContent="📍 "+parcel.pickupAddress+" → 🏁 "+parcel.deliveryAddress; card.appendChild(route);
+          const details=document.createElement("p"); details.textContent="प्राप्तकर्ता: "+parcel.receiverName+" | वाहन: "+vehicleName(parcel.vehicle); card.appendChild(details);
+          const status=document.createElement("p"); status.textContent="स्थिति: "+parcelStatusText(parcel.status); card.appendChild(status);
+          list.appendChild(card);
+        });
+      }, err => { console.error(err); showMessage("parcelMessage", "पार्सल नहीं खुल पाए। Firebase Rules में parcelRequests की अनुमति जाँचें।"); });
+    }
+
+    function stopAvailableParcelListener() {
+      if (unsubscribeAvailableParcels) { unsubscribeAvailableParcels(); unsubscribeAvailableParcels=null; }
+      availableParcelsCache=[];
+    }
+
+    function loadAvailableParcels() {
+      const user=auth.currentUser;
+      if (!user || !currentDriverApproved) return;
+      stopAvailableParcelListener();
+      showMessage("driverParcelsMessage", "उपलब्ध पार्सल लोड हो रहे हैं...");
+      unsubscribeAvailableParcels=onValue(ref(db,"parcelRequests"), snap => {
+        const tree=snap.val()||{}; const parcels=[];
+        for (const [customerUid, customerParcels] of Object.entries(tree)) {
+          for (const [parcelId, parcel] of Object.entries(customerParcels||{})) parcels.push({...parcel,customerUid,parcelId});
+        }
+        availableParcelsCache=parcels; renderAvailableParcels();
+      }, err => { console.error(err); showMessage("driverParcelsMessage", "पार्सल नहीं खुले। Firebase Rules में Approved ड्राइवर को parcelRequests पढ़ने की अनुमति चाहिए।"); });
+    }
+
+    function renderAvailableParcels() {
+      const list=$("driverParcelsList"); list.replaceChildren(); const user=auth.currentUser;
+      const parcels=availableParcelsCache.filter(p =>
+        (p.driverUid === user?.uid && ["accepted", "in_transit"].includes(p.status)) ||
+        (p.status === "pending" && !p.driverUid && p.vehicle === currentDriverVehicle)
+      ).sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+      if (!parcels.length) { showMessage("driverParcelsMessage", "अभी कोई उपलब्ध पार्सल नहीं है।"); return; }
+      showMessage("driverParcelsMessage", "दिखाए गए पार्सल: "+parcels.length);
+      parcels.forEach(parcel=>{
+        const card=document.createElement("div"); card.className="ride";
+        const route=document.createElement("p"); route.textContent="📍 "+parcel.pickupAddress+" → 🏁 "+parcel.deliveryAddress; card.appendChild(route);
+        const details=document.createElement("p"); details.textContent="भेजने वाला: "+parcel.senderName+" ("+parcel.senderPhone+") | पाने वाला: "+parcel.receiverName+" ("+parcel.receiverPhone+")"; card.appendChild(details);
+        const info=document.createElement("p"); info.textContent="पार्सल: "+parcel.parcelType+" | वाहन: "+vehicleName(parcel.vehicle)+" | स्थिति: "+parcelStatusText(parcel.status); card.appendChild(info);
+        const btn=document.createElement("button"); btn.type="button";
+        if (parcel.status==="pending" && !parcel.driverUid) { btn.textContent="पार्सल Accept करें"; btn.onclick=()=>changeParcelState(parcel,"accepted"); }
+        else if (parcel.driverUid===user?.uid && parcel.status==="accepted") { btn.textContent="पार्सल रास्ते में है"; btn.onclick=()=>changeParcelState(parcel,"in_transit"); }
+        else if (parcel.driverUid===user?.uid && parcel.status==="in_transit") { btn.textContent="डिलीवरी पूरी करें"; btn.onclick=()=>changeParcelState(parcel,"delivered"); }
+        else { btn.disabled=true; btn.textContent=parcel.status==="pending"?"दूसरे ड्राइवर ने स्वीकार किया":"डिलीवरी पूरी"; }
+        card.appendChild(btn); list.appendChild(card);
+      });
+    }
+
+    async function changeParcelState(parcel,nextStatus) {
+      const user=auth.currentUser;
+      if (!user || !currentDriverApproved) { alert("केवल Approved ड्राइवर पार्सल स्वीकार कर सकता है।"); return; }
+      const parcelRef=ref(db,"parcelRequests/"+parcel.customerUid+"/"+parcel.parcelId);
+      try {
+        const result=await runTransaction(parcelRef,current=>{
+          if (!current) return;
+          if (nextStatus==="accepted") { if (current.status!=="pending" || current.driverUid) return; return {...current,status:"accepted",driverUid:user.uid,acceptedAt:Date.now()}; }
+          if (current.driverUid!==user.uid) return;
+          if (nextStatus==="in_transit" && current.status==="accepted") return {...current,status:"in_transit",pickedUpAt:Date.now()};
+          if (nextStatus==="delivered" && current.status==="in_transit") return {...current,status:"delivered",deliveredAt:Date.now()};
+          return;
+        });
+        if (!result.committed) { alert("पार्सल स्टेटस नहीं बदला। किसी दूसरे ड्राइवर ने स्वीकार किया हो सकता है या Firebase Rules अनुमति नहीं दे रहे।"); return; }
+        showMessage("driverParcelsMessage", "पार्सल स्थिति अपडेट: "+parcelStatusText(result.snapshot.val().status));
+      } catch(err) { console.error(err); alert("Parcel update error: "+(err.code||"")+" "+(err.message||"")); }
+    }
+    $("refreshDriverParcels").addEventListener("click",loadAvailableParcels);
+
+    $("parcelForm").addEventListener("submit", event => {
+      event.preventDefault(); runBusy(async()=>{
+        const user=auth.currentUser; if (!user) throw new Error("पहले लॉगिन करें।");
+        const phonePattern=/^\+?[0-9]{10,15}$/;
+        const senderPhone=$("parcelSenderPhone").value.trim(), receiverPhone=$("parcelReceiverPhone").value.trim();
+        if (!phonePattern.test(senderPhone) || !phonePattern.test(receiverPhone)) throw new Error("दोनों मोबाइल नंबर 10 से 15 अंकों के सही भरें।");
+        const parcelRef=push(ref(db,"parcelRequests/"+user.uid));
+        await set(parcelRef,{senderName:$("parcelSenderName").value.trim(),senderPhone,pickupAddress:$("parcelPickupAddress").value.trim(),receiverName:$("parcelReceiverName").value.trim(),receiverPhone,deliveryAddress:$("parcelDeliveryAddress").value.trim(),parcelType:$("parcelType").value,vehicle:$("parcelVehicle").value,status:"pending",createdAt:Date.now()});
+        showMessage("parcelMessage", "पार्सल अनुरोध सेव हो गया। यह अभी डेमो है; लाइव शुल्क, पेमेंट और असली डिलीवरी डिस्पैच अभी नहीं जुड़े हैं।");
+        $("parcelForm").reset(); loadMyParcels(user);
+      });
+    });
+
+    function hotelBookingStatusText(status) {
+      return ({pending:"अनुरोध भेजा गया — होटल की पुष्टि बाकी", confirmed:"बुकिंग कन्फर्म", rejected:"बुकिंग स्वीकार नहीं हुई", cancelled:"रद्द"})[status] || status || "—";
+    }
+
+    function loadMyHotelBookings(user) {
+      onValue(ref(db, "hotelBookings/" + user.uid), snap => {
+        const list = $("myHotelBookingsList"); list.replaceChildren();
+        const bookings = Object.entries(snap.val() || {}).reverse();
+        if (!bookings.length) {
+          const p = document.createElement("p"); p.textContent = "अभी कोई होटल बुकिंग अनुरोध नहीं है।"; list.appendChild(p); return;
+        }
+        bookings.forEach(([id, booking]) => {
+          const card = document.createElement("div"); card.className = "ride";
+          const title = document.createElement("p"); title.textContent = "🏨 " + booking.city + " — " + booking.roomType; card.appendChild(title);
+          const dates = document.createElement("p"); dates.textContent = "Check-in: " + booking.checkIn + " | Check-out: " + booking.checkOut; card.appendChild(dates);
+          const details = document.createElement("p"); details.textContent = "मेहमान: " + booking.guests + " | कमरे: " + booking.rooms + " | बुकिंग नाम: " + booking.guestName; card.appendChild(details);
+          const status = document.createElement("p"); status.textContent = "स्थिति: " + hotelBookingStatusText(booking.status); card.appendChild(status);
+          list.appendChild(card);
+        });
+      }, err => { console.error(err); showMessage("hotelMessage", "बुकिंग नहीं खुलीं। Firebase Rules में hotelBookings की अनुमति जोड़ना ज़रूरी है।"); });
+    }
+
+    $("hotelForm").addEventListener("submit", event => {
+      event.preventDefault(); runBusy(async () => {
+        const user = auth.currentUser; if (!user) throw new Error("पहले लॉगिन करें।");
+        const checkIn = $("hotelCheckIn").value, checkOut = $("hotelCheckOut").value;
+        if (!checkIn || !checkOut || checkOut <= checkIn) throw new Error("Check-out तारीख, Check-in के बाद की होनी चाहिए।");
+        const phone = $("hotelGuestPhone").value.trim();
+        if (!/^\+?[0-9]{10,15}$/.test(phone)) throw new Error("सही मोबाइल नंबर डालें।");
+        const guests = Number($("hotelGuests").value), rooms = Number($("hotelRooms").value);
+        if (!Number.isInteger(guests) || guests < 1 || guests > 10 || !Number.isInteger(rooms) || rooms < 1 || rooms > 5) throw new Error("मेहमानों और कमरों की संख्या सही भरें।");
+        const bookingRef = push(ref(db, "hotelBookings/" + user.uid));
+        await set(bookingRef, {city:$("hotelCity").value.trim(), roomType:$("hotelType").value, checkIn, checkOut, guests, rooms, guestName:$("hotelGuestName").value.trim(), guestPhone:phone, status:"pending", createdAt:Date.now()});
+        showMessage("hotelMessage", "होटल बुकिंग अनुरोध सेव हो गया। यह अभी अनुरोध है, कन्फर्म बुकिंग नहीं; होटल उपलब्धता और भुगतान की पुष्टि अभी नहीं जुड़ी है।");
+        $("hotelForm").reset(); loadMyHotelBookings(user);
+      });
+    });
 
     function updateFoodPreview() {
       const opt=$("foodItem").selectedOptions[0]; const price=Number(opt.dataset.price||0);
@@ -708,6 +922,8 @@
         unsubscribeDriverApplication = null;
       }
       stopAvailableRideListener();
+      stopAvailableParcelListener();
+      if (unsubscribeMyParcels) { unsubscribeMyParcels(); unsubscribeMyParcels=null; }
       $("authCard").classList.toggle("hidden", !!user);
       $("accountCard").classList.toggle("hidden", !user);
       $("rolePanel").classList.toggle("hidden", !user);
@@ -717,13 +933,19 @@
       $("driverApplicationCard").classList.toggle("hidden", !user);
       $("driverDashboardCard").classList.add("hidden");
       $("driverRidesCard").classList.add("hidden");
+      $("driverParcelsCard").classList.add("hidden");
       $("foodCard").classList.toggle("hidden", !user);
+      $("hotelCard").classList.toggle("hidden", !user);
+      $("parcelCard").classList.toggle("hidden", !user);
+      $("driverParcelsCard").classList.add("hidden");
 
       if (user) {
         $("userEmail").textContent = "ईमेल: " + (user.email || "");
         listenToMyRides(user);
         listenToMyDriverApplication(user);
         loadFoodOrders(user);
+        loadMyParcels(user);
+        loadMyHotelBookings(user);
       } else {
         $("userEmail").textContent = "";
         $("ridesList").replaceChildren();
@@ -733,7 +955,10 @@
         showMessage("driverStatusDetails", "");
         currentDriverApproved = false;
         $("driverRidesList").replaceChildren();
+        $("driverParcelsList").replaceChildren();
+        $("myParcelsList").replaceChildren();
         $("foodOrdersList").replaceChildren();
+        $("myHotelBookingsList").replaceChildren();
       }
     });
   </script>
