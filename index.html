@@ -2,247 +2,173 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ApnaRide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b70">
+<title>ApnaRide – आपकी अपनी सेवा</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
-header{background:#123b70;color:white;padding:18px;text-align:center}main{max-width:850px;margin:18px auto;padding:0 12px}
-.card{background:white;border-radius:12px;padding:16px;margin:14px 0;box-shadow:0 2px 10px #00000010}
-h2{font-size:19px;margin:0 0 12px;color:#123b70}
-input,select,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ccd5e1;border-radius:8px;font-size:16px}
-button{background:#1769aa;color:white;border:0;font-weight:bold;cursor:pointer}button.secondary{background:#526579}button.danger{background:#b83232}
-button:disabled{opacity:.55}.msg{padding:9px;background:#eef5ff;border-radius:7px;margin:8px 0;white-space:pre-wrap}
-.item{border:1px solid #dce3ec;border-radius:8px;padding:12px;margin:9px 0;overflow-wrap:anywhere}
-.small{font-size:13px;color:#526579}.hidden{display:none!important}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:520px){.row{grid-template-columns:1fr}}
+:root{--navy:#123b70;--blue:#1769aa;--ink:#172033;--muted:#607086;--bg:#f2f6fc;--line:#dce5ef;--green:#16834a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Arial,sans-serif}
+header{background:linear-gradient(120deg,#102f59,#1769aa);color:#fff;padding:22px 16px 26px;text-align:center}
+header h1{margin:0;font-size:30px;letter-spacing:.3px}header p{margin:5px 0 0;opacity:.9}
+main{max-width:1050px;margin:18px auto;padding:0 13px 45px}
+.card{background:#fff;border:1px solid #e7edf4;border-radius:17px;padding:17px;margin:14px 0;box-shadow:0 5px 18px #17365d0b}
+h2{font-size:19px;color:var(--navy);margin:0 0 13px}h3{font-size:16px;color:var(--navy);margin:17px 0 8px}
+input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ccd7e4;border-radius:10px;font:inherit;font-size:15px}
+textarea{min-height:76px;resize:vertical}button{border:0;background:var(--blue);color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#e9f1fa;color:#174a7e}button.danger{background:#b83232}button.good{background:var(--green)}button:disabled{opacity:.55;cursor:wait}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.services{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.service{border:1px solid var(--line);border-radius:14px;padding:13px 8px;text-align:center;background:#fbfdff}
+.service .ico{font-size:28px}.service b{display:block;margin-top:5px;color:#173e6c}.service small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.msg{padding:10px;background:#eef5ff;border-radius:9px;color:#23486f;white-space:pre-wrap;font-size:14px}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:9px 0;overflow-wrap:anywhere;background:#fff}
+.item b{color:#183f6d}.small{font-size:12px;color:var(--muted)}.hidden{display:none!important}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pill{display:inline-block;background:#eaf2fb;color:#174a7e;padding:4px 8px;border-radius:20px;font-size:12px;margin:3px 3px 3px 0}
+.tabs{display:flex;gap:7px;overflow:auto;padding:2px 0 8px}.tabs button{min-width:max-content;width:auto;padding:9px 13px}
+.notice{background:#fff7e5;border:1px solid #f2dfae;border-radius:10px;padding:10px;color:#715319;font-size:13px}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+@media(max-width:650px){.services{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.row{grid-template-columns:1fr}header h1{font-size:26px}}
 </style>
 </head>
 <body>
-<header><h1>ApnaRide</h1><div>Ride Booking • Driver • Admin</div></header>
+<header><h1>ApnaRide</h1><p>🛵 Ride • 📦 Parcel • 🍔 Food • 🏨 Hotel</p></header>
 <main>
 <section class="card" id="authCard">
-<h2>Login / नया Account</h2>
-<input id="name" placeholder="पूरा नाम (नए Account के लिए)">
-<input id="phone" placeholder="मोबाइल नंबर (नए Account के लिए)" inputmode="tel">
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password (कम से कम 6 अक्षर)">
-<div class="row"><button id="signupBtn" type="button">नया Account बनाएँ</button><button id="loginBtn" type="button" class="secondary">Login</button></div>
-<p id="authMsg" class="msg">पहले Login करें या नया Account बनाएँ।</p>
+<h2>👤 Login / नया Account</h2>
+<div class="grid"><input id="name" placeholder="पूरा नाम (नए Account के लिए)"><input id="phone" placeholder="मोबाइल नंबर" inputmode="tel"></div>
+<input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password (कम से कम 6 अक्षर)">
+<div class="row"><button id="signupBtn">नया Account बनाएँ</button><button id="loginBtn" class="secondary">Login</button></div>
+<p id="authMsg" class="msg">Email और Password से Login करें या नया Account बनाएँ।</p>
 </section>
 
 <section class="card hidden" id="accountCard">
-<h2>आपका Account</h2><p id="accountInfo"></p><button id="logoutBtn" class="secondary">Logout</button>
+<div class="row"><div><h2>👋 आपका Account</h2><p id="accountInfo" class="small"></p></div><div><button id="logoutBtn" class="secondary">Logout</button></div></div>
+<div class="services">
+<div class="service"><div class="ico">🛵</div><b>Ride</b><small>शहर में सफर</small></div>
+<div class="service"><div class="ico">📦</div><b>Parcel</b><small>सामान भेजें</small></div>
+<div class="service"><div class="ico">🍔</div><b>Food</b><small>खाना मँगाएँ</small></div>
+<div class="service"><div class="ico">🏨</div><b>Hotel</b><small>कमरा बुक करें</small></div>
+</div>
 </section>
 
-<section class="card hidden" id="rideCard">
-<h2>Ride Book करें</h2>
-<input id="pickup" placeholder="Pickup स्थान">
-<input id="destination" placeholder="Destination">
+<section class="card hidden" id="rideCard"><h2>🛵 Ride Booking</h2>
+<div class="grid"><input id="pickup" placeholder="Pickup स्थान"><input id="destination" placeholder="Destination"></div>
 <select id="rideVehicle"><option>Bike</option><option>Auto</option><option>Car</option></select>
 <button id="bookRideBtn">Ride Book करें</button><p id="rideMsg" class="msg"></p>
 </section>
-
-<section class="card hidden" id="myRidesCard">
-<h2>मेरी Rides</h2><div id="myRidesList">लोड हो रहा है...</div>
+<section class="card hidden" id="parcelCard"><h2>📦 Parcel Delivery</h2>
+<div class="grid"><input id="senderName" placeholder="भेजने वाले का नाम"><input id="senderPhone" placeholder="भेजने वाले का मोबाइल" inputmode="tel"><input id="receiverName" placeholder="पाने वाले का नाम"><input id="receiverPhone" placeholder="पाने वाले का मोबाइल" inputmode="tel"></div>
+<div class="grid"><input id="parcelPickup" placeholder="Pickup Address"><input id="parcelDrop" placeholder="Delivery Address"></div>
+<div class="grid"><select id="parcelType"><option>Documents</option><option>Small Parcel</option><option>Box</option><option>Other</option></select>
+<select id="parcelVehicle"><option>Bike</option><option>Auto</option><option>Car</option><option>DeliveryVan</option><option>TataAce</option><option>TataMagic</option><option>ThreeWheelerTempo</option><option>FourWheelerTempo</option></select></div>
+<button id="bookParcelBtn">Parcel Book करें</button><p id="parcelMsg" class="msg"></p>
+</section>
+<section class="card hidden" id="foodCard"><h2>🍔 Food Ordering</h2><p class="small">Demo menu – Restaurant partner और live delivery अभी जोड़े जाने बाकी हैं।</p>
+<div class="grid"><select id="foodItem"><option value="Thali|120">Gujarati Thali – ₹120</option><option value="Pizza|200">Pizza – ₹200</option><option value="Burger|90">Burger – ₹90</option><option value="Sandwich|70">Sandwich – ₹70</option></select><input id="foodQty" type="number" min="1" max="20" value="1" placeholder="Quantity"></div>
+<textarea id="foodAddress" placeholder="Delivery Address"></textarea><button id="foodOrderBtn">Food Order करें</button><p id="foodMsg" class="msg"></p>
+</section>
+<section class="card hidden" id="hotelCard"><h2>🏨 Hotel / Room Booking</h2>
+<div class="grid"><input id="hotelCity" placeholder="शहर / Area"><select id="roomType"><option>Standard</option><option>Deluxe</option><option>Family</option><option>Couple</option></select></div>
+<div class="grid"><label class="small">Check-in<input id="checkIn" type="date"></label><label class="small">Check-out<input id="checkOut" type="date"></label></div>
+<div class="grid"><input id="guests" type="number" min="1" max="10" value="2" placeholder="Guests"><input id="rooms" type="number" min="1" max="5" value="1" placeholder="Rooms"></div>
+<input id="hotelContact" placeholder="बुकिंग के लिए मोबाइल नंबर"><button id="hotelBookBtn">Hotel Booking Request भेजें</button><p id="hotelMsg" class="msg"></p>
+<hr><h3>उपलब्ध होटल / Rooms</h3><div id="hotelRoomList">अभी होटल पार्टनर उपलब्ध नहीं हैं।</div>
 </section>
 
-<section class="card hidden" id="driverApplyCard">
-<h2>Driver Application</h2>
-<input id="driverName" placeholder="Driver का पूरा नाम">
-<input id="driverPhone" placeholder="मोबाइल नंबर" inputmode="tel">
-<select id="driverVehicle"><option>Bike</option><option>Auto</option><option>Car</option><option>DeliveryVan</option><option>TataAce</option><option>TataMagic</option><option>ThreeWheelerTempo</option></select>
+<section class="card hidden" id="myRidesCard"><h2>🧾 मेरी Bookings</h2><button id="refreshMineBtn" class="secondary">सभी Bookings Refresh करें</button>
+<h3>Rides</h3><div id="myRidesList"></div><h3>Parcels</h3><div id="myParcelsList"></div><h3>Food Orders</h3><div id="myFoodList"></div><h3>Hotel Requests</h3><div id="myHotelList"></div>
+</section>
+
+<section class="card hidden" id="driverApplyCard"><h2>🚗 Driver Registration</h2>
+<input id="driverName" placeholder="Driver का पूरा नाम"><input id="driverPhone" placeholder="मोबाइल नंबर" inputmode="tel">
+<select id="driverVehicle"><option>Bike</option><option>Auto</option><option>Car</option><option>DeliveryVan</option><option>TataAce</option><option>TataMagic</option><option>ThreeWheelerTempo</option><option>FourWheelerTempo</option></select>
 <button id="applyDriverBtn">Driver बनने के लिए Apply करें</button><p id="driverApplyMsg" class="msg"></p>
 </section>
-
-<section class="card hidden" id="driverStatusCard">
-<h2>Driver Status</h2><p id="driverStatusMsg" class="msg"></p>
+<section class="card hidden" id="driverStatusCard"><h2>📋 Driver Status</h2><p id="driverStatusMsg" class="msg"></p></section>
+<section class="card hidden" id="driverPanel"><h2>🚘 Driver Dashboard</h2><p id="driverVehicleInfo" class="small"></p>
+<button id="refreshDriverBtn" class="secondary">Available Work Refresh करें</button><button id="shareLocationBtn" class="good">📍 मेरी वर्तमान Location साझा करें</button><p id="locationMsg" class="msg">Location साझा करने के लिए बटन दबाएँ। यह केवल एक बार की location update है।</p><h3>Pending Rides</h3><div id="driverRides"></div><h3>Pending Parcels</h3><div id="driverParcels"></div><h3>मेरे काम</h3><div id="driverMine"></div>
 </section>
 
-<section class="card hidden" id="driverPanel">
-<h2>Driver Dashboard</h2>
-<p id="driverVehicleInfo" class="small"></p>
-<button id="refreshRidesBtn" class="secondary">Available Rides Refresh करें</button>
-<div id="availableRides">लोड हो रहा है...</div>
-<h2>मेरी Accepted Rides</h2><div id="driverMyRides"></div>
+<section class="card hidden" id="partnerApplyCard"><h2>🏪 Partner Registration</h2>
+<select id="partnerType"><option value="hotel">Hotel Owner</option><option value="restaurant">Restaurant Owner</option></select>
+<input id="partnerBusiness" placeholder="Hotel / Restaurant का नाम"><input id="partnerName" placeholder="Owner का नाम"><input id="partnerPhone" placeholder="मोबाइल नंबर" inputmode="tel"><textarea id="partnerAddress" placeholder="पूरा पता"></textarea>
+<button id="partnerApplyBtn">Partner बनने के लिए Apply करें</button><p id="partnerMsg" class="msg"></p>
+</section>
+<section class="card hidden" id="partnerPanel"><h2>🏨 Partner Dashboard</h2><p id="partnerInfo" class="msg"></p>
+<div id="hotelOwnerTools"><h3>Room जोड़ें</h3><input id="newRoomName" placeholder="Room / Property Name"><div class="grid"><select id="newRoomType"><option>Standard</option><option>Deluxe</option><option>Family</option><option>Couple</option></select><input id="newRoomPrice" type="number" min="1" placeholder="प्रति रात कीमत ₹"></div><input id="newRoomCity" placeholder="शहर / Area"><input id="newRoomCount" type="number" min="1" value="1" placeholder="कमरों की संख्या"><button id="addRoomBtn">Room Publish करें</button><p id="roomMsg" class="msg"></p><h3>मेरे Rooms</h3><div id="ownerRooms"></div></div>
+<div id="restaurantOwnerTools" class="hidden"><p class="notice">Restaurant partner registration अभी उपलब्ध है। Menu publishing और order management अगले चरण में जोड़ा जाएगा।</p></div>
 </section>
 
-<section class="card hidden" id="adminPanel">
-<h2>Admin Panel</h2>
-<button id="refreshAdminBtn" class="secondary">Admin Data Refresh करें</button>
-<h2>Customers</h2><div id="adminCustomers"></div>
-<h2>Driver Applications</h2><div id="adminDrivers"></div>
-<h2>सभी Rides</h2><div id="adminRides"></div>
+<section class="card hidden" id="adminPanel"><h2>👑 Admin Control Center</h2><button id="refreshAdminBtn" class="secondary">Admin Data Refresh</button>
+<h3>Customers</h3><div id="adminCustomers"></div><h3>Driver Applications</h3><div id="adminDrivers"></div><h3>Partner Applications</h3><div id="adminPartners"></div><h3>Rides</h3><div id="adminRides"></div><h3>Parcels</h3><div id="adminParcels"></div><h3>Food Orders</h3><div id="adminFood"></div><h3>Hotel Bookings</h3><div id="adminHotels"></div><h3>Hotel Rooms</h3><div id="adminRooms"></div>
 </section>
+<section class="card"><p class="notice">महत्वपूर्ण: यह शुरुआती MVP है। वास्तविक online payment, लगातार live GPS tracking, automatic fare calculation, restaurant menu publishing और कानूनी/व्यावसायिक commission settlement जोड़ने से पहले server-side Cloud Functions और payment gateway लगाना जरूरी होगा। अभी किसी ग्राहक से online payment न लें।</p></section>
 </main>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { getDatabase, ref, set, get, push, onValue, update } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import {getDatabase,ref,set,get,push,onValue,update,runTransaction} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCik1aKkEePGBT5iqMwXw8ZHQsipYZ3d78",
-  authDomain: "apnaride-6b0ed.firebaseapp.com",
-  databaseURL: "https://apnaride-6b0ed-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "apnaride-6b0ed",
-  storageBucket: "apnaride-6b0ed.firebasestorage.app",
-  messagingSenderId: "566126207398",
-  appId: "1:566126207398:web:225a76f3318f3eadc8ef67"
-};
-const ADMIN_UID = "Q389zoftPfWUFLTHxcDovCi6Qge2";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const $ = id => document.getElementById(id);
-const show = (id, yes) => $(id).classList.toggle("hidden", !yes);
-const msg = (id, text) => $(id).textContent = text;
-const safe = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const vehicleOptions = ["Bike","Auto","Car","DeliveryVan","TataAce","TataMagic","ThreeWheelerTempo"];
-let currentUser = null, profile = null, driverApp = null, ridesCache = {};
-
-function errorText(e) {
-  const known = {
-    "auth/email-already-in-use":"यह Email पहले से registered है। Login करें।",
-    "auth/invalid-email":"Email सही नहीं है।",
-    "auth/weak-password":"Password कम से कम 6 अक्षर का रखें।",
-    "auth/missing-password":"Password खाली है।",
-    "auth/invalid-credential":"Email या Password गलत है।",
-    "auth/network-request-failed":"Internet connection जाँचें।",
-    "PERMISSION_DENIED":"Firebase Rules ने अनुमति नहीं दी।"
-  };
-  return known[e.code] || (e.code ? e.code + ": " : "") + (e.message || "कुछ गलती हुई।");
+const firebaseConfig={apiKey:"AIzaSyCik1aKkEePGBT5iqMwXw8ZHQsipYZ3d78",authDomain:"apnaride-6b0ed.firebaseapp.com",databaseURL:"https://apnaride-6b0ed-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"apnaride-6b0ed",storageBucket:"apnaride-6b0ed.firebasestorage.app",messagingSenderId:"566126207398",appId:"1:566126207398:web:225a76f3318f3eadc8ef67"};
+const ADMIN_UID="Q389zoftPfWUFLTHxcDovCi6Qge2";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
+const show=(id,v)=>$(id).classList.toggle("hidden",!v),say=(id,t)=>$(id).textContent=t;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>"₹"+Number(n||0).toLocaleString("en-IN");
+let user=null,profile=null,driver=null,partner=null,cache={rides:{},parcels:{}};
+const vehicleList=["Bike","Auto","Car","DeliveryVan","TataAce","TataMagic","ThreeWheelerTempo","FourWheelerTempo"];
+function err(e){const m={"auth/email-already-in-use":"यह Email पहले से registered है। Login करें।","auth/invalid-email":"Email सही नहीं है।","auth/weak-password":"Password कम से कम 6 अक्षर का रखें।","auth/invalid-credential":"Email या Password गलत है।","auth/network-request-failed":"Internet connection जाँचें।","PERMISSION_DENIED":"Firebase Rules ने अनुमति नहीं दी।"};return m[e.code]||((e.code||"Error")+": "+(e.message||"कुछ गलती हुई।"))}
+async function signup(){let name=$("name").value.trim(),phone=$("phone").value.trim(),email=$("email").value.trim(),password=$("password").value;if(!name||!phone||!email||!password)return say("authMsg","सभी जानकारी भरें।");if(password.length<6)return say("authMsg","Password कम से कम 6 अक्षर का रखें।");try{$("signupBtn").disabled=true;let c=await createUserWithEmailAndPassword(auth,email,password);await set(ref(db,"customers/"+c.user.uid),{name,phone,email,createdAt:Date.now()});say("authMsg","Account बन गया।")}catch(e){say("authMsg",err(e))}finally{$("signupBtn").disabled=false}}
+async function login(){try{$("loginBtn").disabled=true;await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);say("authMsg","Login सफल।")}catch(e){say("authMsg",err(e))}finally{$("loginBtn").disabled=false}}
+$("signupBtn").onclick=signup;$("loginBtn").onclick=login;$("logoutBtn").onclick=()=>signOut(auth);
+async function read(path){let s=await get(ref(db,path));return s.val()||{}}
+async function loadProfile(){profile=await read("customers/"+user.uid);$("accountInfo").textContent=(profile.name||"नाम नहीं")+" • "+(profile.phone||"मोबाइल नहीं")+" • "+(user.email||"")}
+async function loadApplications(){driver=await read("driverApplications/"+user.uid);partner=await read("partnerApplications/"+user.uid);
+show("driverApplyCard",!driver);show("driverStatusCard",!!driver);show("driverPanel",!!driver&&driver.status==="approved");
+if(driver){say("driverStatusMsg","Status: "+driver.status+" | Vehicle: "+driver.vehicle);if(driver.status==="approved"){say("driverVehicleInfo","Approved Vehicle: "+driver.vehicle);await loadDriverWork()}}
+show("partnerApplyCard",!partner);show("partnerPanel",!!partner&&partner.status==="approved");
+if(partner){say("partnerInfo",partner.businessName+" • "+partner.type+" • "+partner.status);show("hotelOwnerTools",partner.type==="hotel");show("restaurantOwnerTools",partner.type==="restaurant");if(partner.status==="approved"&&partner.type==="hotel")loadOwnerRooms()}
 }
-async function doSignup() {
-  const name = $("name").value.trim(), phone = $("phone").value.trim();
-  const email = $("email").value.trim(), password = $("password").value;
-  if (!name || !phone || !email || !password) return msg("authMsg","नाम, मोबाइल, Email और Password भरें।");
-  if (password.length < 6) return msg("authMsg","Password कम से कम 6 अक्षर का होना चाहिए।");
-  try {
-    $("signupBtn").disabled = true;
-    const cred = await createUserWithEmailAndPassword(auth,email,password);
-    await set(ref(db,"customers/"+cred.user.uid),{name,phone,email,createdAt:Date.now()});
-    msg("authMsg","Account बन गया और Customer Profile save हो गई।");
-  } catch(e) { msg("authMsg","Account/Profile Error: "+errorText(e)); }
-  finally {$("signupBtn").disabled=false;}
+async function createBooking(path,data,msgId){try{let r=push(ref(db,path));await set(r,{...data,status:"pending",createdAt:Date.now()});say(msgId,"Request सफलतापूर्वक भेजी गई। ID: "+r.key);await loadMine()}catch(e){say(msgId,err(e))}}
+$("bookRideBtn").onclick=()=>{let pickup=$("pickup").value.trim(),destination=$("destination").value.trim();if(!pickup||!destination)return say("rideMsg","Pickup और Destination भरें।");createBooking("rideRequests/"+user.uid,{pickup,destination,vehicle:$("rideVehicle").value,customerName:profile?.name||"",customerPhone:profile?.phone||"",customerEmail:user.email||""},"rideMsg")};
+$("bookParcelBtn").onclick=()=>{let fields=["senderName","senderPhone","receiverName","receiverPhone","parcelPickup","parcelDrop"];if(fields.some(x=>!$(x).value.trim()))return say("parcelMsg","सभी नाम, मोबाइल और Address भरें।");let d={senderName:$("senderName").value.trim(),senderPhone:$("senderPhone").value.trim(),receiverName:$("receiverName").value.trim(),receiverPhone:$("receiverPhone").value.trim(),pickup:$("parcelPickup").value.trim(),destination:$("parcelDrop").value.trim(),parcelType:$("parcelType").value,vehicle:$("parcelVehicle").value,customerName:profile?.name||""};createBooking("parcelRequests/"+user.uid,d,"parcelMsg")};
+$("foodOrderBtn").onclick=()=>{let [item,price]=$("foodItem").value.split("|"),qty=Number($("foodQty").value),address=$("foodAddress").value.trim();if(!address||!Number.isInteger(qty)||qty<1||qty>20)return say("foodMsg","Address और Quantity (1 से 20) सही भरें।");let total=Number(price)*qty;createBooking("foodOrders/"+user.uid,{item,unitPrice:Number(price),quantity:qty,total,commissionEstimate:Math.round(total*.1*100)/100,deliveryAddress:address,customerName:profile?.name||""},"foodMsg")};
+$("hotelBookBtn").onclick=()=>{let city=$("hotelCity").value.trim(),ci=$("checkIn").value,co=$("checkOut").value,phone=$("hotelContact").value.trim();if(!city||!ci||!co||!phone||co<=ci||!Number.isInteger(Number($("guests").value))||Number($("guests").value)<1||Number($("guests").value)>10||!Number.isInteger(Number($("rooms").value))||Number($("rooms").value)<1||Number($("rooms").value)>5)return say("hotelMsg","शहर, सही तारीख, मोबाइल, 1–10 Guests और 1–5 Rooms भरें।");createBooking("hotelBookings/"+user.uid,{city,roomType:$("roomType").value,checkIn:ci,checkOut:co,guests:Number($("guests").value),rooms:Number($("rooms").value),phone},"hotelMsg")};
+async function loadMine(){if(!user)return;let [r,p,f,h]=await Promise.all(["rideRequests/"+user.uid,"parcelRequests/"+user.uid,"foodOrders/"+user.uid,"hotelBookings/"+user.uid].map(read));
+const render=(o,fn)=>Object.entries(o).map(([id,x])=>fn(id,x)).join("")||"अभी कोई Booking नहीं।";
+$("myRidesList").innerHTML=render(r,(id,x)=>`<div class="item"><b>${esc(x.pickup)} → ${esc(x.destination)}</b><br>${esc(x.vehicle)} • ${esc(x.status)}<div class="small">${esc(id)}</div></div>`);
+$("myParcelsList").innerHTML=render(p,(id,x)=>`<div class="item"><b>${esc(x.pickup)} → ${esc(x.destination)}</b><br>${esc(x.vehicle)} • ${esc(x.parcelType)} • ${esc(x.status)}<div class="small">${esc(id)}</div></div>`);
+$("myFoodList").innerHTML=render(f,(id,x)=>`<div class="item"><b>${esc(x.item)}</b> × ${esc(x.quantity)} • ${money(x.total)}<br>Status: ${esc(x.status)}</div>`);
+$("myHotelList").innerHTML=render(h,(id,x)=>`<div class="item"><b>${esc(x.city)} – ${esc(x.roomType)}</b><br>${esc(x.checkIn)} से ${esc(x.checkOut)} • ${esc(x.status)}</div>`);
 }
-async function doLogin() {
-  const email=$("email").value.trim(), password=$("password").value;
-  if(!email || !password) return msg("authMsg","Email और Password भरें।");
-  try {$("loginBtn").disabled=true;await signInWithEmailAndPassword(auth,email,password);msg("authMsg","Login सफल।");}
-  catch(e){msg("authMsg","Login Error: "+errorText(e));}
-  finally{$("loginBtn").disabled=false;}
-}
-$("signupBtn").addEventListener("click",doSignup);
-$("loginBtn").addEventListener("click",doLogin);
-$("logoutBtn").addEventListener("click",()=>signOut(auth));
-
-async function loadProfile(user) {
-  const snap=await get(ref(db,"customers/"+user.uid));
-  profile=snap.exists()?snap.val():{name:user.displayName||"",phone:"",email:user.email||""};
-  $("accountInfo").textContent=(profile.name||"नाम उपलब्ध नहीं")+" • "+(profile.phone||"मोबाइल उपलब्ध नहीं")+" • "+(user.email||"");
-}
-async function loadDriverApplication(user) {
-  const snap=await get(ref(db,"driverApplications/"+user.uid));
-  driverApp=snap.exists()?snap.val():null;
-  show("driverStatusCard",!!driverApp);
-  show("driverApplyCard",!driverApp);
-  if(driverApp) {
-    msg("driverStatusMsg","Application Status: "+(driverApp.status||"pending")+" | Vehicle: "+(driverApp.vehicle||""));
-    const approved=driverApp.status==="approved";
-    show("driverPanel",approved);
-    if(approved){$("driverVehicleInfo").textContent="Approved Vehicle: "+driverApp.vehicle;await loadDriverRides();}
-  } else show("driverPanel",false);
-}
-$("bookRideBtn").addEventListener("click",async()=>{
-  if(!currentUser)return;
-  const pickup=$("pickup").value.trim(), destination=$("destination").value.trim(), vehicle=$("rideVehicle").value;
-  if(!pickup||!destination)return msg("rideMsg","Pickup और Destination भरें।");
-  try{
-    const r=push(ref(db,"rideRequests/"+currentUser.uid));
-    await set(r,{pickup,destination,vehicle,status:"pending",customerName:profile?.name||"",customerPhone:profile?.phone||"",customerEmail:currentUser.email||"",createdAt:Date.now()});
-    msg("rideMsg","Ride Book हो गई। Ride ID: "+r.key);
-  }catch(e){msg("rideMsg","Booking Error: "+errorText(e));}
-});
-function renderMyRides(data){
-  const entries=Object.entries(data||{});
-  $("myRidesList").innerHTML=entries.length?entries.map(([id,r])=>`<div class="item"><b>${safe(r.pickup)} → ${safe(r.destination)}</b><br>Vehicle: ${safe(r.vehicle)} | Status: ${safe(r.status)}<br><span class="small">Ride ID: ${safe(id)}</span></div>`).join(""):"अभी कोई Ride नहीं है।";
-}
-function rideCard(customerUid,id,r,admin=false){
-  const assigned=r.driverUid===currentUser?.uid;
-  let actions="";
-  if(!admin && driverApp?.status==="approved"){
-    if(r.status==="pending" && r.vehicle===driverApp.vehicle) actions=`<button data-act="accept" data-uid="${safe(customerUid)}" data-id="${safe(id)}">Accept करें</button>`;
-    if(assigned && r.status==="accepted") actions=`<button data-act="start" data-uid="${safe(customerUid)}" data-id="${safe(id)}">Ride Start करें</button>`;
-    if(assigned && r.status==="in_progress") actions=`<button data-act="complete" data-uid="${safe(customerUid)}" data-id="${safe(id)}">Ride Complete करें</button>`;
-  }
-  return `<div class="item"><b>${safe(r.pickup)} → ${safe(r.destination)}</b><br>Vehicle: ${safe(r.vehicle)} | Status: ${safe(r.status)}<br>Customer: ${safe(r.customerName||"नाम उपलब्ध नहीं")}<br>${admin?"Phone: "+safe(r.customerPhone||"—")+" | Email: "+safe(r.customerEmail||"—")+"<br>":""}<span class="small">Customer UID: ${safe(customerUid)} | Ride ID: ${safe(id)}</span>${actions}</div>`;
-}
-async function loadDriverRides(){
-  try{
-    const snap=await get(ref(db,"rideRequests"));ridesCache=snap.val()||{};
-    let available="",mine="";
-    for(const [uid,list] of Object.entries(ridesCache)){
-      for(const [id,r] of Object.entries(list||{})){
-        if(r.status==="pending" && r.vehicle===driverApp.vehicle) available+=rideCard(uid,id,r);
-        if(r.driverUid===currentUser.uid) mine+=rideCard(uid,id,r);
-      }
-    }
-    $("availableRides").innerHTML=available||"आपके Vehicle के लिए अभी कोई Pending Ride नहीं है।";
-    $("driverMyRides").innerHTML=mine||"आपकी कोई Accepted Ride नहीं है।";
-  }catch(e){$("availableRides").textContent="Rides Error: "+errorText(e);}
-}
-$("refreshRidesBtn").addEventListener("click",loadDriverRides);
-$("driverPanel").addEventListener("click",async e=>{
-  const b=e.target.closest("button[data-act]");if(!b)return;
-  const uid=b.dataset.uid,id=b.dataset.id,act=b.dataset.act;
-  const r=ridesCache?.[uid]?.[id];if(!r)return;
-  let patch={};
-  if(act==="accept" && r.status==="pending")patch={status:"accepted",driverUid:currentUser.uid,acceptedAt:Date.now()};
-  else if(act==="start" && r.status==="accepted" && r.driverUid===currentUser.uid)patch={status:"in_progress",startedAt:Date.now()};
-  else if(act==="complete" && r.status==="in_progress" && r.driverUid===currentUser.uid)patch={status:"completed",completedAt:Date.now()};
-  else return alert("Ride की स्थिति बदल चुकी है। Refresh करें।");
-  try{b.disabled=true;await update(ref(db,`rideRequests/${uid}/${id}`),patch);await loadDriverRides();}
-  catch(err){alert("Ride Update Error: "+errorText(err));b.disabled=false;}
-});
-
-$("applyDriverBtn").addEventListener("click",async()=>{
-  const name=$("driverName").value.trim(),phone=$("driverPhone").value.trim(),vehicle=$("driverVehicle").value;
-  if(!name||!phone)return msg("driverApplyMsg","नाम और मोबाइल नंबर भरें।");
-  try{await set(ref(db,"driverApplications/"+currentUser.uid),{name,phone,vehicle,status:"pending",createdAt:Date.now()});msg("driverApplyMsg","Application भेज दी गई। Admin approval का इंतज़ार करें।");await loadDriverApplication(currentUser);}
-  catch(e){msg("driverApplyMsg","Application Error: "+errorText(e));}
-});
-
-async function loadAdmin(){
-  try{
-    const [cs,ds,rs]=await Promise.all([get(ref(db,"customers")),get(ref(db,"driverApplications")),get(ref(db,"rideRequests"))]);
-    const customers=cs.val()||{},drivers=ds.val()||{},rides=rs.val()||{};
-    $("adminCustomers").innerHTML=Object.entries(customers).map(([uid,c])=>`<div class="item"><b>${safe(c.name)}</b><br>Phone: ${safe(c.phone)}<br>Email: ${safe(c.email)}<br><span class="small">UID: ${safe(uid)}</span></div>`).join("")||"कोई Customer नहीं।";
-    $("adminDrivers").innerHTML=Object.entries(drivers).map(([uid,d])=>`<div class="item"><b>${safe(d.name)}</b><br>${safe(d.phone)} | ${safe(d.vehicle)} | Status: ${safe(d.status)}<div class="row"><button data-driver="approved" data-uid="${safe(uid)}">Approve</button><button class="danger" data-driver="rejected" data-uid="${safe(uid)}">Reject</button></div></div>`).join("")||"कोई Driver Application नहीं।";
-    let all="";
-    for(const [uid,list] of Object.entries(rides))for(const [id,r] of Object.entries(list||{}))all+=rideCard(uid,id,r,true);
-    $("adminRides").innerHTML=all||"कोई Ride नहीं।";
-  }catch(e){$("adminCustomers").textContent="Admin Data Error: "+errorText(e);}
-}
-$("refreshAdminBtn").addEventListener("click",loadAdmin);
-$("adminPanel").addEventListener("click",async e=>{
-  const b=e.target.closest("button[data-driver]");if(!b)return;
-  try{b.disabled=true;await set(ref(db,"driverApplications/"+b.dataset.uid+"/status"),b.dataset.driver);await loadAdmin();}
-  catch(err){alert("Admin Update Error: "+errorText(err));b.disabled=false;}
-});
-
-onAuthStateChanged(auth,async user=>{
-  currentUser=user;profile=null;driverApp=null;
-  show("authCard",!user);show("accountCard",!!user);show("rideCard",!!user);show("myRidesCard",!!user);
-  show("driverApplyCard",!!user);show("driverStatusCard",false);show("driverPanel",false);show("adminPanel",!!user&&user.uid===ADMIN_UID);
-  if(!user){$("myRidesList").textContent="Login करें।";return;}
-  try{
-    await loadProfile(user);
-    onValue(ref(db,"rideRequests/"+user.uid),snap=>renderMyRides(snap.val()||{}),err=>msg("rideMsg",errorText(err)));
-    await loadDriverApplication(user);
-    if(user.uid===ADMIN_UID)await loadAdmin();
-  }catch(e){msg("authMsg","Account load error: "+errorText(e));}
-});
+$("refreshMineBtn").onclick=loadMine;
+$("applyDriverBtn").onclick=async()=>{let name=$("driverName").value.trim(),phone=$("driverPhone").value.trim();if(!name||!phone)return say("driverApplyMsg","नाम और मोबाइल भरें।");try{await set(ref(db,"driverApplications/"+user.uid),{name,phone,vehicle:$("driverVehicle").value,status:"pending",createdAt:Date.now()});say("driverApplyMsg","Application भेज दी गई।");await loadApplications()}catch(e){say("driverApplyMsg",err(e))}};
+$("partnerApplyBtn").onclick=async()=>{let businessName=$("partnerBusiness").value.trim(),name=$("partnerName").value.trim(),phone=$("partnerPhone").value.trim(),address=$("partnerAddress").value.trim(),type=$("partnerType").value;if(!businessName||!name||!phone||!address)return say("partnerMsg","सभी जानकारी भरें।");try{await set(ref(db,"partnerApplications/"+user.uid),{type,businessName,name,phone,address,status:"pending",createdAt:Date.now()});say("partnerMsg","Application भेज दी गई। Admin approval का इंतज़ार करें।");await loadApplications()}catch(e){say("partnerMsg",err(e))}};
+$("addRoomBtn").onclick=async()=>{let name=$("newRoomName").value.trim(),price=Number($("newRoomPrice").value),city=$("newRoomCity").value.trim(),count=Number($("newRoomCount").value);if(!name||!city||price<=0||count<1)return say("roomMsg","Room, शहर, कीमत और संख्या सही भरें।");try{let r=push(ref(db,"hotelRooms"));await set(r,{ownerUid:user.uid,hotelName:partner.businessName,roomName:name,roomType:$("newRoomType").value,pricePerNight:price,city,roomCount:count,status:"available",createdAt:Date.now()});say("roomMsg","Room publish हो गया।");loadOwnerRooms();loadHotelRooms()}catch(e){say("roomMsg",err(e))}};
+async function loadOwnerRooms(){try{let all=await read("hotelRooms"),mine=Object.entries(all).filter(([id,x])=>x.ownerUid===user.uid);$("ownerRooms").innerHTML=mine.map(([id,x])=>`<div class="item"><b>${esc(x.hotelName)} – ${esc(x.roomName)}</b><br>${esc(x.city)} • ${esc(x.roomType)} • ${money(x.pricePerNight)}/रात</div>`).join("")||"अभी कोई Room नहीं।"}catch(e){$("ownerRooms").textContent=err(e)}}
+async function loadHotelRooms(){try{let all=await read("hotelRooms"),rows=Object.entries(all).filter(([id,x])=>x.status==="available");$("hotelRoomList").innerHTML=rows.map(([id,x])=>`<div class="item"><b>${esc(x.hotelName)} – ${esc(x.roomName)}</b><br>${esc(x.city)} • ${esc(x.roomType)} • ${money(x.pricePerNight)}/रात • ${esc(x.roomCount)} कमरे<br><button data-hotelroom="${esc(id)}">यह Room Request करें</button></div>`).join("")||"अभी कोई approved hotel room उपलब्ध नहीं है।"}catch(e){$("hotelRoomList").textContent=err(e)}}
+$("hotelRoomList").onclick=async e=>{let b=e.target.closest("[data-hotelroom]");if(!b)return;let id=b.dataset.hotelroom;try{let room=(await read("hotelRooms"))[id];if(!room)return;let ci=$("checkIn").value,co=$("checkOut").value;if(!ci||!co||co<=ci)return say("hotelMsg","पहले सही Check-in और Check-out चुनें।");await createBooking("hotelBookings/"+user.uid,{roomId:id,hotelName:room.hotelName,roomName:room.roomName,city:room.city,roomType:room.roomType,pricePerNight:room.pricePerNight,checkIn:ci,checkOut:co,guests:Number($("guests").value),rooms:Number($("rooms").value),phone:$("hotelContact").value.trim()},"hotelMsg")}catch(error){say("hotelMsg",err(error))}};
+function cardAction(type,uid,id,status){return `<button data-work="${type}" data-uid="${esc(uid)}" data-id="${esc(id)}" data-status="${status}">${status==="accepted"?"Accept":status==="in_progress"?"Start / रास्ते में":"Complete / Delivered"}</button>`}
+function workCard(type,uid,id,x,admin=false){let assigned=x.driverUid===user.uid,buttons="";if(!admin&&driver?.status==="approved"&&x.vehicle===driver.vehicle){if(x.status==="pending")buttons=cardAction(type,uid,id,"accepted");else if(assigned&&x.status==="accepted")buttons=cardAction(type,uid,id,"in_progress");else if(assigned&&x.status==="in_progress")buttons=cardAction(type,uid,id,"completed")}
+return `<div class="item"><b>${esc(x.pickup)} → ${esc(x.destination)}</b><br>${esc(x.vehicle)} • ${esc(x.status)}<br><span class="small">Customer: ${esc(x.customerName||"—")} • ${esc(id)}</span>${buttons}</div>`}
+async function loadDriverWork(){try{let [r,p]=await Promise.all([read("rideRequests"),read("parcelRequests")]);cache={rides:r,parcels:p};let availR="",availP="",mine="";
+for(let [uid,list] of Object.entries(r))for(let [id,x] of Object.entries(list||{})){if(x.status==="pending"&&x.vehicle===driver.vehicle)availR+=workCard("ride",uid,id,x);if(x.driverUid===user.uid)mine+=workCard("ride",uid,id,x)}
+for(let [uid,list] of Object.entries(p))for(let [id,x] of Object.entries(list||{})){if(x.status==="pending"&&x.vehicle===driver.vehicle)availP+=workCard("parcel",uid,id,x);if(x.driverUid===user.uid)mine+=workCard("parcel",uid,id,x)}
+$("driverRides").innerHTML=availR||"कोई Pending Ride नहीं।";$("driverParcels").innerHTML=availP||"कोई Pending Parcel नहीं।";$("driverMine").innerHTML=mine||"अभी कोई assigned काम नहीं।"}catch(e){$("driverRides").textContent=err(e)}}
+$("refreshDriverBtn").onclick=loadDriverWork;
+$("driverPanel").onclick=async e=>{let b=e.target.closest("[data-work]");if(!b)return;let type=b.dataset.work,uid=b.dataset.uid,id=b.dataset.id,next=b.dataset.status,path=(type==="ride"?"rideRequests/":"parcelRequests/")+uid+"/"+id,old=(type==="ride"?cache.rides:cache.parcels)?.[uid]?.[id];if(!old)return;let patch={status:next};if(next==="accepted")patch.driverUid=user.uid;if(next==="in_progress")patch.startedAt=Date.now();if(next==="completed")patch.completedAt=Date.now();try{b.disabled=true;const result=await runTransaction(ref(db,path),cur=>{if(!cur||driver?.status!=="approved"||cur.vehicle!==driver.vehicle)return; if(next==="accepted"&&cur.status==="pending"&&!cur.driverUid)return {...cur,status:"accepted",driverUid:user.uid,acceptedAt:Date.now()}; if(next==="in_progress"&&cur.status==="accepted"&&cur.driverUid===user.uid)return {...cur,status:"in_progress",startedAt:Date.now()}; if(next==="completed"&&cur.status==="in_progress"&&cur.driverUid===user.uid)return {...cur,status:"completed",completedAt:Date.now()}; return;});if(!result.committed)throw new Error("यह काम किसी दूसरे Driver ने ले लिया है या Status बदल गया है।");await loadDriverWork();await loadMine()}catch(e){alert(err(e));b.disabled=false}};
+$("shareLocationBtn").onclick=()=>{if(!user||driver?.status!=="approved")return say("locationMsg","केवल Approved Driver Location साझा कर सकता है।");if(!navigator.geolocation)return say("locationMsg","इस Browser में GPS उपलब्ध नहीं है।");say("locationMsg","Location प्राप्त हो रही है...");navigator.geolocation.getCurrentPosition(async pos=>{try{await set(ref(db,"driverLocations/"+user.uid),{lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:Math.round(pos.coords.accuracy),updatedAt:Date.now()});say("locationMsg","Location सेव हो गई। यह एक बार का अपडेट है, लगातार Live Tracking नहीं।")}catch(e){say("locationMsg",err(e))}},e=>say("locationMsg","Location अनुमति नहीं मिली: "+e.message),{enableHighAccuracy:true,timeout:15000,maximumAge:0})};
+async function adminLoad(){try{let [cs,ds,ps,rs,prs,fs,hs,rooms]=await Promise.all(["customers","driverApplications","partnerApplications","rideRequests","parcelRequests","foodOrders","hotelBookings","hotelRooms"].map(read));
+const simple=(o,fn)=>Object.entries(o).map(([uid,x])=>fn(uid,x)).join("")||"कोई रिकॉर्ड नहीं।";
+$("adminCustomers").innerHTML=simple(cs,(uid,x)=>`<div class="item"><b>${esc(x.name)}</b><br>${esc(x.phone)} • ${esc(x.email)}<div class="small">${esc(uid)}</div></div>`);
+$("adminDrivers").innerHTML=simple(ds,(uid,x)=>`<div class="item"><b>${esc(x.name)}</b> • ${esc(x.vehicle)} • ${esc(x.status)}<br>${esc(x.phone)}<div class="row"><button data-approve="driverApplications" data-uid="${esc(uid)}" data-status="approved">Approve</button><button class="danger" data-approve="driverApplications" data-uid="${esc(uid)}" data-status="rejected">Reject</button></div></div>`);
+$("adminPartners").innerHTML=simple(ps,(uid,x)=>`<div class="item"><b>${esc(x.businessName)}</b> • ${esc(x.type)} • ${esc(x.status)}<br>${esc(x.name)} • ${esc(x.phone)}<div class="row"><button data-approve="partnerApplications" data-uid="${esc(uid)}" data-status="approved">Approve</button><button class="danger" data-approve="partnerApplications" data-uid="${esc(uid)}" data-status="rejected">Reject</button></div></div>`);
+const nested=(o,type)=>Object.entries(o).flatMap(([uid,list])=>Object.entries(list||{}).map(([id,x])=>`<div class="item"><b>${esc(x.pickup||x.item||x.hotelName||"Booking")}</b> • ${esc(x.destination||x.status||"")}<br>${esc(x.vehicle||x.city||"")} • ${esc(x.status||"")}<div class="small">UID: ${esc(uid)} | ID: ${esc(id)}</div></div>`)).join("")||"कोई रिकॉर्ड नहीं।";
+$("adminRides").innerHTML=nested(rs,"ride");$("adminParcels").innerHTML=nested(prs,"parcel");$("adminFood").innerHTML=nested(fs,"food");$("adminHotels").innerHTML=nested(hs,"hotel");
+$("adminRooms").innerHTML=simple(rooms,(id,x)=>`<div class="item"><b>${esc(x.hotelName)} – ${esc(x.roomName)}</b><br>${esc(x.city)} • ${money(x.pricePerNight)} • Owner: ${esc(x.ownerUid)}</div>`);
+}catch(e){$("adminCustomers").textContent="Admin Error: "+err(e)}}
+$("refreshAdminBtn").onclick=adminLoad;
+$("adminPanel").onclick=async e=>{let b=e.target.closest("[data-approve]");if(!b)return;try{b.disabled=true;await set(ref(db,b.dataset.approve+"/"+b.dataset.uid+"/status"),b.dataset.status);await adminLoad()}catch(e){alert(err(e));b.disabled=false}};
+onAuthStateChanged(auth,async u=>{user=u;profile=null;driver=null;partner=null;["accountCard","rideCard","parcelCard","foodCard","hotelCard","myRidesCard","driverApplyCard","partnerApplyCard"].forEach(id=>show(id,!!u));show("authCard",!u);show("driverStatusCard",false);show("driverPanel",false);show("partnerPanel",false);show("adminPanel",!!u&&u.uid===ADMIN_UID);
+if(!u)return;try{await loadProfile();await loadApplications();await Promise.all([loadMine(),loadHotelRooms()]);if(u.uid===ADMIN_UID)await adminLoad();}catch(e){say("authMsg","Account load error: "+err(e))}});
 </script>
-</body>
-</html>
+</body></html>
